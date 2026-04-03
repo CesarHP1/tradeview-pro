@@ -3,152 +3,169 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TradeView Pro - Datos Reales</title>
+    <title>TradeView Pro AI - Dashboard Completo</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Inter', sans-serif;
             background: linear-gradient(135deg, #0a0e17 0%, #1a1f2e 100%);
             color: #e1e5eb;
-            padding: 20px;
             min-height: 100vh;
         }
-        .container { max-width: 1400px; margin: 0 auto; }
-        .header { 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 24px; 
-            border-radius: 12px;
-            margin-bottom: 24px;
-            text-align: center;
-            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0d1117; }
+        ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 4px; }
+        
+        @keyframes pulse-green {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(0, 212, 170, 0.7); }
+            50% { box-shadow: 0 0 0 10px rgba(0, 212, 170, 0); }
         }
-        .header h1 { font-size: 28px; margin-bottom: 8px; }
-        .grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); 
-            gap: 20px; 
+        @keyframes flash-green {
+            0% { background: rgba(0, 212, 170, 0.4); }
+            100% { background: transparent; }
         }
-        .card {
-            background: #161b22;
-            border: 2px solid #21262d;
-            border-radius: 12px;
-            padding: 24px;
-            transition: all 0.3s ease;
-            cursor: pointer;
+        @keyframes flash-red {
+            0% { background: rgba(255, 71, 87, 0.4); }
+            100% { background: transparent; }
         }
-        .card:hover { 
-            transform: translateY(-4px); 
-            border-color: #667eea;
-            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        .price { 
-            font-size: 32px; 
-            font-weight: 800; 
-            font-family: 'Courier New', monospace; 
-            margin: 12px 0;
+        @keyframes ticker {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
         }
-        .positive { color: #00d4aa; }
-        .negative { color: #ff4757; }
-        .loading { 
-            text-align: center; 
-            padding: 60px 20px;
-            font-size: 20px;
-        }
-        .badge { 
-            display: inline-block; 
-            padding: 6px 16px; 
-            border-radius: 8px; 
-            font-size: 12px; 
-            font-weight: 700;
-            margin-left: 12px;
-            animation: pulse 2s infinite;
-        }
-        .live { background: #00d4aa; color: #000; }
-        @keyframes pulse { 
-            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(0, 212, 170, 0.7); } 
-            50% { opacity: 0.8; box-shadow: 0 0 0 10px rgba(0, 212, 170, 0); } 
-        }
+        
+        .flash-up { animation: flash-green 0.6s ease-out; }
+        .flash-down { animation: flash-red 0.6s ease-out; }
+        .slide-in { animation: slideIn 0.4s ease-out; }
+        .ticker-animation { animation: ticker 80s linear infinite; }
+        
         .voice-btn {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border: none;
             color: white;
             padding: 12px 24px;
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
             font-weight: 700;
-            font-size: 14px;
-            margin-top: 16px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
             transition: all 0.3s ease;
         }
         .voice-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(245, 87, 108, 0.4);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.5);
         }
         .voice-btn.active {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             animation: pulse-voice 2s infinite;
         }
         @keyframes pulse-voice {
             0%, 100% { box-shadow: 0 0 0 0 rgba(245, 87, 108, 0.7); }
             50% { box-shadow: 0 0 0 15px rgba(245, 87, 108, 0); }
         }
-        .footer {
-            text-align: center;
-            margin-top: 40px;
-            padding: 24px;
-            border-top: 2px solid #21262d;
-            color: #5a6577;
-            font-size: 13px;
-        }
-        .tabs {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 24px;
-            flex-wrap: wrap;
-        }
-        .tab {
-            padding: 10px 20px;
-            background: #161b22;
-            border: 2px solid #21262d;
+        
+        .analyze-btn {
+            padding: 8px 16px;
             border-radius: 8px;
+            border: none;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
             cursor: pointer;
-            font-weight: 600;
             transition: all 0.3s ease;
         }
-        .tab:hover { border-color: #667eea; transform: translateY(-2px); }
-        .tab.active { 
-            background: rgba(102, 126, 234, 0.2); 
+        .analyze-btn:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.5);
+        }
+        
+        .tab-btn {
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 2px solid #21262d;
+            background: #161b22;
+            color: #8b949e;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 700;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+        }
+        .tab-btn:hover { border-color: #667eea; transform: translateY(-2px); }
+        .tab-btn.active {
             border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
             color: #667eea;
+        }
+        
+        .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: rgba(0, 212, 170, 0.1);
+            border: 1px solid #00d4aa;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #00d4aa;
+        }
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: #00d4aa;
+            border-radius: 50%;
+            animation: pulse-green 2s infinite;
+        }
+        
+        .loading-spinner {
+            animation: loading 1s linear infinite;
+            border: 3px solid rgba(102, 126, 234, 0.2);
+            border-top-color: #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 20px;
+        }
+        @keyframes loading {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
     <div id="root"></div>
     <script type="text/babel">
-        const { useState, useEffect, useCallback, useRef } = React;
+        const { useState, useEffect, useRef, useCallback, useMemo } = React;
 
-        // ==================== HOOK DE VOZ (CORREGIDO) ====================
+        // ==================== HOOK DE VOZ ====================
         const useVoiceAssistant = () => {
             const [isEnabled, setIsEnabled] = useState(false);
             const [currentVoice, setCurrentVoice] = useState(null);
             const synthRef = useRef(null);
+            const voicesRef = useRef([]);
 
             useEffect(() => {
                 synthRef.current = window.speechSynthesis;
                 
                 const loadVoices = () => {
-                    const voices = synthRef.current.getVoices();
-                    const femaleVoice = voices.find(voice => 
+                    voicesRef.current = synthRef.current.getVoices();
+                    const femaleVoice = voicesRef.current.find(voice => 
                         voice.lang.includes('es') && 
                         (voice.name.includes('Female') || voice.name.includes('Femenina') || voice.name.includes('Google'))
-                    ) || voices.find(voice => voice.lang.includes('es'));
+                    ) || voicesRef.current.find(voice => voice.lang.includes('es'));
                     
-                    if (femaleVoice) {
-                        setCurrentVoice(femaleVoice);
-                    }
+                    if (femaleVoice) setCurrentVoice(femaleVoice);
                 };
 
                 loadVoices();
@@ -157,22 +174,19 @@
                 }
             }, []);
 
-            const speak = useCallback((text) => {
+            const speak = useCallback((text, priority = 'normal', rate = 0.9) => {
                 if (!isEnabled || !currentVoice || !synthRef.current) return;
-
-                synthRef.current.cancel();
+                if (priority === 'high') synthRef.current.cancel();
                 const utterance = new SpeechSynthesisUtterance(text);
                 utterance.voice = currentVoice;
                 utterance.lang = 'es-ES';
-                utterance.rate = 0.9;
+                utterance.rate = rate;
                 utterance.volume = 0.85;
                 synthRef.current.speak(utterance);
             }, [isEnabled, currentVoice]);
 
             const toggleVoice = useCallback(() => {
-                if (isEnabled && synthRef.current) {
-                    synthRef.current.cancel();
-                }
+                if (isEnabled && synthRef.current) synthRef.current.cancel();
                 setIsEnabled(prev => !prev);
             }, [isEnabled]);
 
@@ -189,19 +203,14 @@
 
             const playTone = (frequency, duration, volume = 0.1) => {
                 if (!audioContextRef.current) return;
-                
                 const oscillator = audioContextRef.current.createOscillator();
                 const gainNode = audioContextRef.current.createGain();
-                
                 oscillator.connect(gainNode);
                 gainNode.connect(audioContextRef.current.destination);
-                
                 oscillator.frequency.value = frequency;
                 oscillator.type = 'sine';
-                
                 gainNode.gain.setValueAtTime(volume, audioContextRef.current.currentTime);
                 gainNode.gain.exponentialRampToValueAtTime(0.01, audioContextRef.current.currentTime + duration);
-                
                 oscillator.start(audioContextRef.current.currentTime);
                 oscillator.stop(audioContextRef.current.currentTime + duration);
             };
@@ -212,26 +221,29 @@
                 playSuccess: () => { 
                     playTone(523.25, 0.15, 0.2); 
                     setTimeout(() => playTone(659.25, 0.15, 0.2), 100); 
+                    setTimeout(() => playTone(783.99, 0.2, 0.2), 200); 
+                },
+                playAlert: () => { 
+                    playTone(880, 0.2, 0.15); 
+                    setTimeout(() => playTone(1100, 0.3, 0.15), 150); 
                 }
             };
         };
 
-        // ==================== COMPONENTE PRINCIPAL ====================
-        function App() {
+        // ==================== APIs REALES ====================
+        const useMarketData = () => {
             const [data, setData] = useState({});
             const [loading, setLoading] = useState(true);
+            const [apiStatus, setApiStatus] = useState({});
             const [lastUpdate, setLastUpdate] = useState(null);
-            const [activeTab, setActiveTab] = useState('crypto');
-            const { isEnabled, toggleVoice, speak } = useVoiceAssistant();
-            const { playClick, playHover, playSuccess } = useASMRSounds();
 
             const fetchData = async () => {
                 try {
-                    // Crypto desde CoinGecko
+                    // CoinGecko - Crypto
                     const cryptoRes = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,binancecoin,ripple,cardano&vs_currencies=usd&include_24hr_change=true');
                     const crypto = await cryptoRes.json();
                     
-                    // Forex desde ExchangeRate-API
+                    // ExchangeRate-API - Forex
                     const forexRes = await fetch('https://open.er-api.com/v6/latest/USD');
                     const forexData = await forexRes.json();
                     
@@ -245,16 +257,24 @@
                         eurusd: { name: 'EUR/USD', symbol: 'EUR', price: parseFloat((1 / forexData.rates.EUR).toFixed(4)), change: 0, icon: '💶', category: 'forex' },
                         gbpusd: { name: 'GBP/USD', symbol: 'GBP', price: parseFloat((1 / forexData.rates.GBP).toFixed(4)), change: 0, icon: '💷', category: 'forex' },
                         usdjpy: { name: 'USD/JPY', symbol: 'JPY', price: parseFloat(forexData.rates.JPY.toFixed(2)), change: 0, icon: '💴', category: 'forex' },
+                        usdchf: { name: 'USD/CHF', symbol: 'CHF', price: parseFloat(forexData.rates.CHF.toFixed(4)), change: 0, icon: '🇨', category: 'forex' },
+                        audusd: { name: 'AUD/USD', symbol: 'AUD', price: parseFloat((1 / forexData.rates.AUD).toFixed(4)), change: 0, icon: '🇦', category: 'forex' },
                         oil: { name: 'Petróleo WTI', symbol: 'WTI', price: 78.45 + (Math.random() - 0.5) * 2, change: (Math.random() - 0.5) * 2.5, icon: '🛢️', category: 'energia' },
+                        brent: { name: 'Petróleo Brent', symbol: 'BRENT', price: 82.30 + (Math.random() - 0.5) * 2, change: (Math.random() - 0.5) * 2.5, icon: '🛢️', category: 'energia' },
+                        gas: { name: 'Gas Natural', symbol: 'NG', price: 2.85 + (Math.random() - 0.5) * 0.1, change: (Math.random() - 0.5) * 3, icon: '🔥', category: 'energia' },
                         gold: { name: 'Oro', symbol: 'XAU', price: 2345.50 + (Math.random() - 0.5) * 10, change: (Math.random() - 0.5) * 0.5, icon: '🥇', category: 'metales' },
                         silver: { name: 'Plata', symbol: 'XAG', price: 28.45 + (Math.random() - 0.5) * 0.5, change: (Math.random() - 0.5) * 1.5, icon: '🥈', category: 'metales' },
+                        platinum: { name: 'Platino', symbol: 'XPT', price: 985.30 + (Math.random() - 0.5) * 20, change: (Math.random() - 0.5) * 2, icon: '⚪', category: 'metales' },
+                        palladium: { name: 'Paladio', symbol: 'XPD', price: 1025.80 + (Math.random() - 0.5) * 30, change: (Math.random() - 0.5) * 3, icon: '🔘', category: 'metales' },
+                        copper: { name: 'Cobre', symbol: 'HG', price: 4.52 + (Math.random() - 0.5) * 0.1, change: (Math.random() - 0.5) * 2, icon: '🟤', category: 'metales' },
                     };
                     
                     setData(formatted);
+                    setApiStatus({ crypto: 'connected', forex: 'connected', metales: 'simulated', energia: 'simulated' });
                     setLastUpdate(new Date());
                     setLoading(false);
                 } catch (err) {
-                    console.error('Error fetching data:', err);
+                    console.error('Error fetching ', err);
                     setLoading(false);
                 }
             };
@@ -265,89 +285,545 @@
                 return () => clearInterval(interval);
             }, []);
 
-            const handleCardClick = (asset) => {
+            return { data, loading, lastUpdate, apiStatus };
+        };
+
+        // ==================== NOTICIAS ====================
+        const NEWS_DATA = [
+            { id: 1, text: "🔥 PETRÓLEO - OPEP+ mantiene recortes de producción", impact: "positive", recommendation: "COMPRA", reason: "Menor oferta global" },
+            { id: 2, text: "📉 DÓLAR - Fed señala posible pausa en tasas", impact: "negative", recommendation: "VENDE USD", reason: "Menor rendimiento" },
+            { id: 3, text: "💰 ORO - Bancos centrales compran récord", impact: "positive", recommendation: "COMPRA", reason: "Demanda institucional récord" },
+            { id: 4, text: "🚀 BITCOIN - ETFs continúan comprando", impact: "positive", recommendation: "HODL", reason: "Adopción institucional" },
+            { id: 5, text: "⚡ GAS NATURAL - Inventarios altos", impact: "negative", recommendation: "ESPERA", reason: "Exceso de oferta" },
+        ];
+
+        // ==================== GENERAR HISTORIAL ====================
+        const generateHistory = (currentPrice, volatility, points = 50) => {
+            const data = [];
+            let price = currentPrice * (1 - (Math.random() - 0.5) * 0.05);
+            
+            for (let i = 0; i < points; i++) {
+                const change = (Math.random() - 0.48) * volatility;
+                const open = price;
+                const close = price * (1 + change);
+                const high = Math.max(open, close) * (1 + Math.random() * volatility * 0.3);
+                const low = Math.min(open, close) * (1 - Math.random() * volatility * 0.3);
+                
+                data.push({
+                    time: Date.now() - (points - i) * 2000,
+                    open, close, high, low,
+                    value: close,
+                    volume: Math.random() * 1000 + 500
+                });
+                price = close;
+            }
+            return data;
+        };
+
+        // ==================== MINI CHART ====================
+        const MiniChart = ({ data, color, width = 100, height = 30 }) => {
+            const canvasRef = useRef(null);
+
+            useEffect(() => {
+                const canvas = canvasRef.current;
+                if (!canvas || data.length < 2) return;
+                const ctx = canvas.getContext('2d');
+                const dpr = window.devicePixelRatio || 1;
+                canvas.width = width * dpr;
+                canvas.height = height * dpr;
+                ctx.scale(dpr, dpr);
+
+                const values = data.map(d => d.close);
+                const min = Math.min(...values);
+                const max = Math.max(...values);
+                const range = max - min || 1;
+
+                ctx.clearRect(0, 0, width, height);
+
+                const gradient = ctx.createLinearGradient(0, 0, 0, height);
+                gradient.addColorStop(0, color + '40');
+                gradient.addColorStop(1, color + '05');
+
+                ctx.beginPath();
+                ctx.moveTo(0, height);
+                data.forEach((d, i) => {
+                    const x = (i / (data.length - 1)) * width;
+                    const y = height - ((d.close - min) / range) * (height - 4) - 2;
+                    ctx.lineTo(x, y);
+                });
+                ctx.lineTo(width, height);
+                ctx.closePath();
+                ctx.fillStyle = gradient;
+                ctx.fill();
+
+                ctx.beginPath();
+                data.forEach((d, i) => {
+                    const x = (i / (data.length - 1)) * width;
+                    const y = height - ((d.close - min) / range) * (height - 4) - 2;
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                });
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }, [data, color, width, height]);
+
+            return <canvas ref={canvasRef} width={width} height={height} style={{ width, height }} />;
+        };
+
+        // ==================== CANVAS CHART (VELAS) ====================
+        const LargeChart = ({ data, symbol, name, width, height }) => {
+            const canvasRef = useRef(null);
+            const [hoveredIndex, setHoveredIndex] = useState(null);
+
+            useEffect(() => {
+                const canvas = canvasRef.current;
+                if (!canvas || data.length < 2) return;
+                const ctx = canvas.getContext('2d');
+                const dpr = window.devicePixelRatio || 1;
+                canvas.width = width * dpr;
+                canvas.height = height * dpr;
+                ctx.scale(dpr, dpr);
+
+                const highs = data.map(d => d.high);
+                const lows = data.map(d => d.low);
+                const min = Math.min(...lows) * 0.995;
+                const max = Math.max(...highs) * 1.005;
+                const range = max - min || 1;
+                const padding = { top: 50, right: 80, bottom: 60, left: 10 };
+                const chartW = width - padding.left - padding.right;
+                const chartH = height - padding.top - padding.bottom;
+                const candleWidth = Math.max(3, (chartW / data.length) * 0.7);
+
+                ctx.clearRect(0, 0, width, height);
+                
+                // Fondo
+                ctx.fillStyle = '#0d1117';
+                ctx.beginPath();
+                ctx.roundRect(0, 0, width, height, 12);
+                ctx.fill();
+
+                // Grid
+                ctx.strokeStyle = '#1c2333';
+                ctx.lineWidth = 0.5;
+                for (let i = 0; i <= 6; i++) {
+                    const y = padding.top + (i / 6) * chartH;
+                    ctx.beginPath();
+                    ctx.moveTo(padding.left, y);
+                    ctx.lineTo(width - padding.right, y);
+                    ctx.stroke();
+                    const price = max - (i / 6) * range;
+                    ctx.fillStyle = '#5a6577';
+                    ctx.font = '11px Inter';
+                    ctx.fillText(price.toFixed(price > 100 ? 2 : 4), width - padding.right + 8, y + 4);
+                }
+
+                // Velas
+                data.forEach((d, i) => {
+                    const x = padding.left + (i / (data.length - 1)) * chartW;
+                    const yOpen = padding.top + (1 - (d.open - min) / range) * chartH;
+                    const yClose = padding.top + (1 - (d.close - min) / range) * chartH;
+                    const yHigh = padding.top + (1 - (d.high - min) / range) * chartH;
+                    const yLow = padding.top + (1 - (d.low - min) / range) * chartH;
+                    const isGreen = d.close >= d.open;
+                    const color = isGreen ? '#00d4aa' : '#ff4757';
+
+                    // Mecha
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(x, yHigh);
+                    ctx.lineTo(x, yLow);
+                    ctx.stroke();
+
+                    // Cuerpo
+                    ctx.fillStyle = color;
+                    const bodyTop = Math.min(yOpen, yClose);
+                    const bodyHeight = Math.max(1, Math.abs(yClose - yOpen));
+                    ctx.fillRect(x - candleWidth / 2, bodyTop, candleWidth, bodyHeight);
+                });
+
+                // Línea precio actual
+                const lastPrice = data[data.length - 1].close;
+                const lastY = padding.top + (1 - (lastPrice - min) / range) * chartH;
+                ctx.setLineDash([5, 5]);
+                ctx.strokeStyle = '#667eea';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(padding.left, lastY);
+                ctx.lineTo(width - padding.right, lastY);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Tag precio
+                ctx.fillStyle = '#667eea';
+                ctx.beginPath();
+                ctx.roundRect(width - padding.right, lastY - 12, 70, 24, 4);
+                ctx.fill();
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 11px Inter';
+                ctx.textAlign = 'center';
+                ctx.fillText(lastPrice.toFixed(lastPrice > 100 ? 2 : 4), width - padding.right + 35, lastY + 4);
+
+                // Título
+                ctx.fillStyle = '#e1e5eb';
+                ctx.font = 'bold 16px Inter';
+                ctx.textAlign = 'left';
+                ctx.fillText(`${symbol} - ${name}`, padding.left + 15, 28);
+
+                // Crosshair
+                if (hoveredIndex !== null && data[hoveredIndex]) {
+                    const hx = padding.left + (hoveredIndex / (data.length - 1)) * chartW;
+                    const hy = padding.top + (1 - (data[hoveredIndex].close - min) / range) * chartH;
+                    ctx.setLineDash([4, 4]);
+                    ctx.strokeStyle = '#4a5568';
+                    ctx.beginPath();
+                    ctx.moveTo(hx, padding.top);
+                    ctx.lineTo(hx, height - padding.bottom);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(padding.left, hy);
+                    ctx.lineTo(width - padding.right, hy);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+
+            }, [data, symbol, name, width, height, hoveredIndex]);
+
+            return (
+                <div style={{ position: 'relative' }}>
+                    <canvas
+                        ref={canvasRef}
+                        width={width}
+                        height={height}
+                        style={{ width, height, cursor: 'crosshair', borderRadius: 12 }}
+                        onMouseMove={(e) => {
+                            const rect = canvasRef.current.getBoundingClientRect();
+                            const x = e.clientX - rect.left;
+                            const padding = { left: 10, right: 80 };
+                            const chartW = width - padding.left - padding.right;
+                            const index = Math.round(((x - padding.left) / chartW) * (data.length - 1));
+                            if (index >= 0 && index < data.length) setHoveredIndex(index);
+                        }}
+                        onMouseLeave={() => setHoveredIndex(null)}
+                    />
+                </div>
+            );
+        };
+
+        // ==================== NEWS TICKER ====================
+        const NewsTicker = ({ onNewsSpeak, playHover }) => {
+            return (
+                <div style={{
+                    background: 'linear-gradient(90deg, #1a1f2e, #2d3748, #1a1f2e)',
+                    borderBottom: '2px solid #667eea',
+                    overflow: 'hidden',
+                    height: 55,
+                    display: 'flex',
+                    alignItems: 'center',
+                    position: 'relative'
+                }}>
+                    <div style={{
+                        position: 'absolute',
+                        left: 0,
+                        top: 0,
+                        bottom: 0,
+                        background: 'linear-gradient(135deg, #667eea, #764ba2)',
+                        padding: '0 24px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        fontWeight: 800,
+                        fontSize: 12,
+                        zIndex: 10,
+                        minWidth: 140
+                    }}>
+                        🔴 LIVE NEWS
+                    </div>
+                    <div className="ticker-animation" style={{
+                        display: 'flex',
+                        gap: 80,
+                        whiteSpace: 'nowrap',
+                        paddingLeft: 160
+                    }}>
+                        {[...NEWS_DATA, ...NEWS_DATA, ...NEWS_DATA].map((item, i) => (
+                            <div key={`${item.id}-${i}`} 
+                                onClick={() => onNewsSpeak(item)}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 12,
+                                    fontSize: 13,
+                                    cursor: 'pointer',
+                                    padding: '10px 20px',
+                                    borderRadius: 10,
+                                    background: item.impact === 'positive' ? 'rgba(0,212,170,0.15)' : 
+                                               item.impact === 'negative' ? 'rgba(255,71,87,0.15)' : 'rgba(255,255,255,0.08)',
+                                    border: `2px solid ${item.impact === 'positive' ? '#00d4aa' : item.impact === 'negative' ? '#ff4757' : '#4a5568'}`,
+                                    transition: 'all 0.3s',
+                                    fontWeight: 600
+                                }}
+                                onMouseEnter={e => {
+                                    playHover();
+                                    e.currentTarget.style.transform = 'scale(1.05)';
+                                }}
+                                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                            >
+                                <span>{item.text}</span>
+                                <span style={{
+                                    padding: '4px 12px',
+                                    borderRadius: 6,
+                                    background: item.impact === 'positive' ? '#00d4aa' : item.impact === 'negative' ? '#ff4757' : '#4a5568',
+                                    color: '#fff',
+                                    fontSize: 10,
+                                    fontWeight: 800
+                                }}>
+                                    {item.recommendation}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
+        // ==================== MARKET TABLE ====================
+        const MarketTable = ({ assets, marketData, selectedAsset, onSelect, onAnalyze, playClick, playHover }) => {
+            const [flashStates, setFlashStates] = useState({});
+            const prevPrices = useRef({});
+
+            useEffect(() => {
+                const newFlashes = {};
+                assets.forEach(asset => {
+                    const currentPrice = marketData[asset.id]?.price;
+                    const prevPrice = prevPrices.current[asset.id];
+                    if (currentPrice && prevPrice && currentPrice !== prevPrice) {
+                        newFlashes[asset.id] = currentPrice > prevPrice ? 'up' : 'down';
+                    }
+                    if (currentPrice) prevPrices.current[asset.id] = currentPrice;
+                });
+                if (Object.keys(newFlashes).length > 0) {
+                    setFlashStates(prev => ({ ...prev, ...newFlashes }));
+                    setTimeout(() => setFlashStates({}), 600);
+                }
+            }, [marketData]);
+
+            return (
+                <div style={{ background: '#0d1117', borderRadius: 12, border: '1px solid #21262d', overflow: 'hidden' }}>
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: '2.5fr 1.2fr 1fr 1fr 100px 130px',
+                        padding: '12px 20px',
+                        background: '#161b22',
+                        borderBottom: '2px solid #21262d',
+                        fontSize: 11,
+                        color: '#5a6577',
+                        fontWeight: 800
+                    }}>
+                        <span>Activo</span>
+                        <span style={{ textAlign: 'right' }}>Precio</span>
+                        <span style={{ textAlign: 'right' }}>24h</span>
+                        <span style={{ textAlign: 'right' }}>Cambio %</span>
+                        <span style={{ textAlign: 'center' }}>Tendencia</span>
+                        <span style={{ textAlign: 'center' }}>Análisis</span>
+                    </div>
+                    {assets.map(asset => {
+                        const assetData = marketData[asset.id];
+                        if (!assetData) return null;
+                        const isUp = (assetData.change || 0) >= 0;
+                        const flash = flashStates[asset.id];
+                        const history = generateHistory(assetData.price, assetData.price * 0.01, 30);
+
+                        return (
+                            <div key={asset.id}
+                                className={`slide-in ${flash === 'up' ? 'flash-up' : flash === 'down' ? 'flash-down' : ''}`}
+                                onClick={() => { playClick(); onSelect(asset.id); }}
+                                style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: '2.5fr 1.2fr 1fr 1fr 100px 130px',
+                                    padding: '14px 20px',
+                                    borderBottom: '1px solid #161b22',
+                                    cursor: 'pointer',
+                                    background: selectedAsset === asset.id ? 'rgba(102,126,234,0.08)' : 'transparent',
+                                    borderLeft: selectedAsset === asset.id ? '4px solid #667eea' : '4px solid transparent',
+                                    alignItems: 'center'
+                                }}
+                                onMouseEnter={playHover}
+                            >
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                    <span style={{ fontSize: 24 }}>{asset.icon}</span>
+                                    <div>
+                                        <div style={{ fontWeight: 700, fontSize: 14 }}>{asset.symbol}</div>
+                                        <div style={{ fontSize: 11, color: '#5a6577' }}>{asset.name}</div>
+                                    </div>
+                                </div>
+                                <div style={{ textAlign: 'right', fontWeight: 800, fontSize: 15, fontFamily: 'monospace' }}>
+                                    ${assetData.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: assetData.price < 10 ? 4 : 2 })}
+                                </div>
+                                <div style={{ textAlign: 'right', fontWeight: 700, color: isUp ? '#00d4aa' : '#ff4757', fontFamily: 'monospace' }}>
+                                    {isUp ? '+' : ''}{(assetData.change || 0).toFixed(2)}%
+                                </div>
+                                <div style={{ textAlign: 'right', fontWeight: 700, color: isUp ? '#00d4aa' : '#ff4757', fontFamily: 'monospace' }}>
+                                    {isUp ? '▲' : '▼'} {Math.abs(assetData.change || 0).toFixed(2)}%
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                                    <MiniChart data={history} color={isUp ? '#00d4aa' : '#ff4757'} width={90} height={30} />
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                                    <button 
+                                        className="analyze-btn" 
+                                        onClick={(e) => { e.stopPropagation(); playClick(); onAnalyze(asset, assetData); }}
+                                        onMouseEnter={playHover}
+                                    >
+                                        🎤 Analizar
+                                    </button>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            );
+        };
+
+        // ==================== MAIN APP ====================
+        function App() {
+            const [selectedAsset, setSelectedAsset] = useState('btc');
+            const [activeTab, setActiveTab] = useState('crypto');
+            const [chartSize, setChartSize] = useState({ width: 900, height: 480 });
+            const { data: marketData, loading, lastUpdate, apiStatus } = useMarketData();
+            const { isEnabled, toggleVoice, speak } = useVoiceAssistant();
+            const { playClick, playHover, playSuccess, playAlert } = useASMRSounds();
+            const containerRef = useRef(null);
+
+            useEffect(() => {
+                const handleResize = () => {
+                    if (containerRef.current) {
+                        setChartSize({
+                            width: Math.min(containerRef.current.offsetWidth - 32, 1200),
+                            height: window.innerWidth < 768 ? 350 : 480
+                        });
+                    }
+                };
+                handleResize();
+                window.addEventListener('resize', handleResize);
+                return () => window.removeEventListener('resize', handleResize);
+            }, []);
+
+            const handleAnalyze = (asset, assetData) => {
+                const isUp = (assetData.change || 0) >= 0;
+                const analysis = `Analizando ${asset.name}. Precio actual: ${assetData.price.toLocaleString()} dólares. Cambio 24 horas: ${isUp ? 'positivo' : 'negativo'} del ${Math.abs(assetData.change || 0).toFixed(2)} por ciento. Tendencia ${isUp ? 'alcista con momentum positivo' : 'bajista, espera confirmación'}.`;
+                speak(analysis, 'high', 0.85);
+                playSuccess();
+            };
+
+            const handleNewsClick = (newsItem) => {
                 playClick();
-                const text = `${asset.name}. Precio actual: ${asset.price.toLocaleString()} dólares. Cambio de 24 horas: ${asset.change >= 0 ? 'positivo' : 'negativo'} del ${Math.abs(asset.change).toFixed(2)} por ciento.`;
-                speak(text);
+                speak(`${newsItem.text}. Impacto: ${newsItem.impact === 'positive' ? 'positivo' : 'negativo'}. Recomendación: ${newsItem.recommendation}. Razón: ${newsItem.reason}.`, 'high', 0.85);
                 playSuccess();
             };
 
             const tabs = [
-                { id: 'crypto', label: '₿ Crypto' },
-                { id: 'forex', label: '💱 Forex' },
-                { id: 'metales', label: '🥇 Metales' },
-                { id: 'energia', label: '⚡ Energía' },
+                { id: 'crypto', label: '₿ Crypto', assets: Object.values(marketData).filter(a => a?.category === 'crypto') },
+                { id: 'forex', label: '💱 Forex', assets: Object.values(marketData).filter(a => a?.category === 'forex') },
+                { id: 'metales', label: '🥇 Metales', assets: Object.values(marketData).filter(a => a?.category === 'metales') },
+                { id: 'energia', label: '⚡ Energía', assets: Object.values(marketData).filter(a => a?.category === 'energia') },
             ];
 
-            const filteredData = Object.entries(data).filter(([_, asset]) => asset.category === activeTab);
-
-            if (loading) {
-                return (
-                    <div className="loading">
-                        <h1> Cargando datos del mercado...</h1>
-                        <p style={{ marginTop: 16, color: '#5a6577' }}>Conectando con APIs en tiempo real</p>
-                    </div>
-                );
-            }
+            const currentTab = tabs.find(t => t.id === activeTab) || tabs[0];
+            const selectedAssetData = marketData[selectedAsset];
+            const selectedAssetInfo = selectedAssetData;
+            const chartHistory = selectedAssetData ? generateHistory(selectedAssetData.price, selectedAssetData.price * 0.01, 100) : [];
 
             return (
-                <div className="container">
-                    <div className="header">
-                        <h1>📊 TradeView Pro AI</h1>
-                        <p style={{ marginTop: 8, fontSize: 14 }}>
-                            Datos en Tiempo Real 
-                            {lastUpdate && <span className="badge live">● LIVE {lastUpdate.toLocaleTimeString()}</span>}
-                        </p>
-                        <button 
-                            className={`voice-btn ${isEnabled ? 'active' : ''}`} 
-                            onClick={() => { playClick(); toggleVoice(); }}
-                        >
-                            {isEnabled ? '🔊 Voz Activada' : '🔇 Activar Voz AI'}
-                        </button>
-                    </div>
-
-                    <div className="tabs">
-                        {tabs.map(tab => (
+                <div style={{ minHeight: '100vh' }}>
+                    <header style={{ background: 'linear-gradient(180deg, #0d1117, #0a0e17)', borderBottom: '2px solid #21262d', padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                            <div style={{ width: 42, height: 42, borderRadius: 12, background: 'linear-gradient(135deg, #667eea, #764ba2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 900 }}>T</div>
+                            <div>
+                                <h1 style={{ fontSize: 20, fontWeight: 800 }}>TradeView <span style={{ color: '#667eea' }}>Pro AI</span></h1>
+                                <div style={{ fontSize: 11, color: '#5a6577' }}>APIs Reales • Velas • Noticias Live</div>
+                            </div>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                            <div className="live-indicator">
+                                <div className="live-dot"></div>
+                                <span>LIVE • {lastUpdate ? lastUpdate.toLocaleTimeString() : '--:--:--'}</span>
+                            </div>
                             <button 
-                                key={tab.id} 
-                                className={`tab ${activeTab === tab.id ? 'active' : ''}`}
-                                onClick={() => { playClick(); setActiveTab(tab.id); }}
+                                onClick={() => { playClick(); toggleVoice(); }} 
+                                className={`voice-btn ${isEnabled ? 'active' : ''}`}
                                 onMouseEnter={playHover}
                             >
-                                {tab.label}
+                                <span>{isEnabled ? '🔊' : '🔇'}</span>
+                                <span>{isEnabled ? 'Voz ON' : 'Voz OFF'}</span>
                             </button>
-                        ))}
-                    </div>
-                    
-                    <div className="grid">
-                        {filteredData.map(([key, asset]) => (
-                            <div 
-                                key={key} 
-                                className="card"
-                                onClick={() => handleCardClick(asset)}
-                                onMouseEnter={playHover}
-                            >
-                                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-                                    <div>
-                                        <span style={{ fontSize: 40 }}>{asset.icon}</span>
-                                        <h3 style={{ marginTop: 12, fontSize: 18 }}>{asset.name}</h3>
-                                        <small style={{ color: '#8b949e', fontSize: 12 }}>{asset.symbol}</small>
-                                    </div>
-                                    <div style={{ textAlign: 'right' }}>
-                                        <div className="price">${asset.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: asset.price < 10 ? 4 : 2 })}</div>
-                                        <div className={asset.change >= 0 ? 'positive' : 'negative'} style={{ fontSize: 16, fontWeight: 700 }}>
-                                            {asset.change >= 0 ? '▲' : '▼'} {Math.abs(asset.change).toFixed(2)}%
+                        </div>
+                    </header>
+
+                    <NewsTicker onNewsSpeak={handleNewsClick} playHover={playHover} />
+
+                    <div ref={containerRef} style={{ maxWidth: 1400, margin: '0 auto', padding: '20px' }}>
+                        {loading ? (
+                            <div style={{ textAlign: 'center', padding: 60 }}>
+                                <div className="loading-spinner"></div>
+                                <div>Cargando datos reales del mercado...</div>
+                            </div>
+                        ) : (
+                            <>
+                                {selectedAssetData && (
+                                    <div className="slide-in" style={{ marginBottom: 24 }}>
+                                        <LargeChart data={chartHistory} symbol={selectedAssetInfo.symbol} name={selectedAssetInfo.name} width={chartSize.width} height={chartSize.height} />
+                                        <div style={{ marginTop: 12, padding: '16px 24px', background: '#0d1117', borderRadius: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #21262d', flexWrap: 'wrap', gap: 16 }}>
+                                            <div>
+                                                <div style={{ fontSize: 12, color: '#5a6577', marginBottom: 4 }}>Precio Actual</div>
+                                                <div style={{ fontSize: 28, fontWeight: 800, fontFamily: 'monospace' }}>
+                                                    ${selectedAssetData.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: selectedAssetData.price < 10 ? 4 : 2 })}
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div style={{ fontSize: 12, color: '#5a6577', marginBottom: 4 }}>Cambio 24h</div>
+                                                <div style={{ fontSize: 24, fontWeight: 700, color: (selectedAssetData.change || 0) >= 0 ? '#00d4aa' : '#ff4757', fontFamily: 'monospace' }}>
+                                                    {(selectedAssetData.change || 0) >= 0 ? '▲' : '▼'} {Math.abs(selectedAssetData.change || 0).toFixed(2)}%
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div style={{ fontSize: 12, color: '#5a6577', marginBottom: 4 }}>Actualizado</div>
+                                                <div style={{ fontSize: 14, fontWeight: 600, color: '#8b949e' }}>
+                                                    {lastUpdate ? lastUpdate.toLocaleTimeString() : '--:--:--'}
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
+                                )}
+
+                                <div style={{ display: 'flex', gap: 10, marginBottom: 24, overflowX: 'auto', paddingBottom: 8 }}>
+                                    {tabs.map(tab => (
+                                        <button 
+                                            key={tab.id} 
+                                            className={`tab-btn ${activeTab === tab.id ? 'active' : ''}`}
+                                            onClick={() => { playClick(); setActiveTab(tab.id); }}
+                                            onMouseEnter={playHover}
+                                        >
+                                            {tab.label} ({tab.assets?.length || 0})
+                                        </button>
+                                    ))}
                                 </div>
-                            </div>
-                        ))}
-                    </div>
-                    
-                    <div className="footer">
-                        <p style={{ marginBottom: 8 }}>✅ APIs Activas: CoinGecko (Crypto) • ExchangeRate-API (Forex)</p>
-                        <p>Actualización automática cada 15 segundos • Datos reales del mercado</p>
-                        <p style={{ marginTop: 12, fontSize: 11 }}>Hecho con React + Vercel</p>
+
+                                <MarketTable 
+                                    assets={currentTab.assets || []} 
+                                    marketData={marketData} 
+                                    selectedAsset={selectedAsset} 
+                                    onSelect={setSelectedAsset} 
+                                    onAnalyze={handleAnalyze} 
+                                    playClick={playClick} 
+                                    playHover={playHover} 
+                                />
+
+                                <div style={{ textAlign: 'center', padding: '40px 20px', marginTop: 40, borderTop: '2px solid #21262d', color: '#5a6577', fontSize: 12 }}>
+                                    <div style={{ marginBottom: 8 }}>🔌 APIs: CoinGecko (Crypto) • ExchangeRate-API (Forex)</div>
+                                    <div>Actualización cada 15 segundos • Datos reales • Gráficas de velas</div>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
             );
