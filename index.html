@@ -418,151 +418,175 @@
         };
 
         // ==================== CANVAS CHART (VELAS) ====================
-        const LargeChart = ({ data, symbol, name, width, height, playHover }) => {
-            const canvasRef = useRef(null);
-            const [hoveredIndex, setHoveredIndex] = useState(null);
+// ==================== CANVAS CHART (VELAS) ====================
+const LargeChart = ({ data, symbol, name, width, height, playHover }) => {
+    const canvasRef = useRef(null);
+    const [hoveredIndex, setHoveredIndex] = useState(null);
 
-            useEffect(() => {
-                const canvas = canvasRef.current;
-                if (!canvas || data.length < 2) return;
-                const ctx = canvas.getContext('2d');
-                const dpr = window.devicePixelRatio || 1;
-                canvas.width = width * dpr;
-                canvas.height = height * dpr;
-                ctx.scale(dpr, dpr);
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas || data.length < 2) return;
+        
+        const ctx = canvas.getContext('2d');
+        const dpr = window.devicePixelRatio || 1;
+        
+        // Configurar canvas correctamente
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+        ctx.scale(dpr, dpr);
+        ctx.clearRect(0, 0, width, height);
 
-                const highs = data.map(d => d.high);
-                const lows = data.map(d => d.low);
-                const min = Math.min(...lows) * 0.995;
-                const max = Math.max(...highs) * 1.005;
-                const range = max - min || 1;
-                const padding = { top: 50, right: 80, bottom: 60, left: 10 };
-                const chartW = width - padding.left - padding.right;
-                const chartH = height - padding.top - padding.bottom;
-                const candleWidth = Math.max(3, (chartW / data.length) * 0.7);
+        // Calcular rangos de precios
+        const highs = data.map(d => d.high);
+        const lows = data.map(d => d.low);
+        const min = Math.min(...lows) * 0.998;
+        const max = Math.max(...highs) * 1.002;
+        const range = max - min || 1;
+        
+        const padding = { top: 50, right: 80, bottom: 60, left: 10 };
+        const chartW = width - padding.left - padding.right;
+        const chartH = height - padding.top - padding.bottom;
+        const candleWidth = Math.max(4, (chartW / data.length) * 0.7);
 
-                ctx.clearRect(0, 0, width, height);
-                
-                ctx.fillStyle = '#0d1117';
-                ctx.beginPath();
-                ctx.roundRect(0, 0, width, height, 12);
-                ctx.fill();
+        // Fondo oscuro
+        ctx.fillStyle = '#0d1117';
+        ctx.fillRect(0, 0, width, height);
 
-                ctx.strokeStyle = '#1c2333';
-                ctx.lineWidth = 0.5;
-                for (let i = 0; i <= 6; i++) {
-                    const y = padding.top + (i / 6) * chartH;
-                    ctx.beginPath();
-                    ctx.moveTo(padding.left, y);
-                    ctx.lineTo(width - padding.right, y);
-                    ctx.stroke();
-                    const price = max - (i / 6) * range;
-                    ctx.fillStyle = '#5a6577';
-                    ctx.font = '11px Inter';
-                    ctx.fillText(price.toFixed(price > 100 ? 2 : 4), width - padding.right + 8, y + 4);
-                }
+        // Grid horizontal
+        ctx.strokeStyle = '#1c2333';
+        ctx.lineWidth = 0.5;
+        for (let i = 0; i <= 6; i++) {
+            const y = padding.top + (i / 6) * chartH;
+            ctx.beginPath();
+            ctx.moveTo(padding.left, y);
+            ctx.lineTo(width - padding.right, y);
+            ctx.stroke();
+            
+            // Precios en eje derecho
+            const price = max - (i / 6) * range;
+            ctx.fillStyle = '#5a6577';
+            ctx.font = '11px Inter';
+            ctx.textAlign = 'left';
+            ctx.fillText(price.toFixed(price > 100 ? 2 : 4), width - padding.right + 8, y + 4);
+        }
 
-                // Volumen
-                const maxVol = Math.max(...data.map(d => d.volume || 1000));
-                data.forEach((d, i) => {
-                    const x = padding.left + (i / (data.length - 1)) * chartW;
-                    const volHeight = ((d.volume || 1000) / maxVol) * 30;
-                    const isGreen = d.close >= d.open;
-                    ctx.fillStyle = isGreen ? 'rgba(0,212,170,0.2)' : 'rgba(255,71,87,0.2)';
-                    ctx.fillRect(x - candleWidth/2, height - padding.bottom - volHeight, candleWidth, volHeight);
-                });
+        // Volumen (barras abajo)
+        const maxVol = Math.max(...data.map(d => d.volume || 1000));
+        data.forEach((d, i) => {
+            const x = padding.left + (i / (data.length - 1)) * chartW;
+            const volHeight = ((d.volume || 1000) / maxVol) * 30;
+            const isGreen = d.close >= d.open;
+            ctx.fillStyle = isGreen ? 'rgba(0,212,170,0.2)' : 'rgba(255,71,87,0.2)';
+            ctx.fillRect(x - candleWidth/2, height - padding.bottom - volHeight, candleWidth, volHeight);
+        });
 
-                // Velas
-                data.forEach((d, i) => {
-                    const x = padding.left + (i / (data.length - 1)) * chartW;
-                    const yOpen = padding.top + (1 - (d.open - min) / range) * chartH;
-                    const yClose = padding.top + (1 - (d.close - min) / range) * chartH;
-                    const yHigh = padding.top + (1 - (d.high - min) / range) * chartH;
-                    const yLow = padding.top + (1 - (d.low - min) / range) * chartH;
-                    const isGreen = d.close >= d.open;
-                    const color = isGreen ? '#00d4aa' : '#ff4757';
+        // Dibujar velas japonesas
+        data.forEach((d, i) => {
+            const x = padding.left + (i / (data.length - 1)) * chartW;
+            const yOpen = padding.top + (1 - (d.open - min) / range) * chartH;
+            const yClose = padding.top + (1 - (d.close - min) / range) * chartH;
+            const yHigh = padding.top + (1 - (d.high - min) / range) * chartH;
+            const yLow = padding.top + (1 - (d.low - min) / range) * chartH;
+            
+            const isGreen = d.close >= d.open;
+            const color = isGreen ? '#00d4aa' : '#ff4757';
 
-                    ctx.strokeStyle = color;
-                    ctx.lineWidth = 1;
-                    ctx.beginPath();
-                    ctx.moveTo(x, yHigh);
-                    ctx.lineTo(x, yLow);
-                    ctx.stroke();
+            // Mecha (línea vertical)
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(x, yHigh);
+            ctx.lineTo(x, yLow);
+            ctx.stroke();
 
-                    ctx.fillStyle = color;
-                    const bodyTop = Math.min(yOpen, yClose);
-                    const bodyHeight = Math.max(1, Math.abs(yClose - yOpen));
-                    ctx.fillRect(x - candleWidth / 2, bodyTop, candleWidth, bodyHeight);
-                });
+            // Cuerpo de la vela
+            ctx.fillStyle = color;
+            const bodyTop = Math.min(yOpen, yClose);
+            const bodyHeight = Math.max(2, Math.abs(yClose - yOpen));
+            ctx.fillRect(x - candleWidth / 2, bodyTop, candleWidth, bodyHeight);
+        });
 
-                // Línea precio actual
-                const lastPrice = data[data.length - 1].close;
-                const lastY = padding.top + (1 - (lastPrice - min) / range) * chartH;
-                ctx.setLineDash([5, 5]);
-                ctx.strokeStyle = '#667eea';
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                ctx.moveTo(padding.left, lastY);
-                ctx.lineTo(width - padding.right, lastY);
-                ctx.stroke();
-                ctx.setLineDash([]);
+        // Línea de precio actual
+        const lastPrice = data[data.length - 1].close;
+        const lastY = padding.top + (1 - (lastPrice - min) / range) * chartH;
+        ctx.setLineDash([5, 5]);
+        ctx.strokeStyle = '#667eea';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(padding.left, lastY);
+        ctx.lineTo(width - padding.right, lastY);
+        ctx.stroke();
+        ctx.setLineDash([]);
 
-                // Tag precio
-                ctx.fillStyle = '#667eea';
-                ctx.beginPath();
-                ctx.roundRect(width - padding.right, lastY - 12, 70, 24, 4);
-                ctx.fill();
-                ctx.fillStyle = '#fff';
-                ctx.font = 'bold 11px Inter';
-                ctx.textAlign = 'center';
-                ctx.fillText(lastPrice.toFixed(lastPrice > 100 ? 2 : 4), width - padding.right + 35, lastY + 4);
+        // Tag de precio actual
+        ctx.fillStyle = '#667eea';
+        ctx.fillRect(width - padding.right, lastY - 12, 70, 24);
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 11px Inter';
+        ctx.textAlign = 'center';
+        ctx.fillText(lastPrice.toFixed(lastPrice > 100 ? 2 : 4), width - padding.right + 35, lastY + 4);
 
-                // Título
-                ctx.fillStyle = '#e1e5eb';
-                ctx.font = 'bold 16px Inter';
-                ctx.textAlign = 'left';
-                ctx.fillText(`${symbol} - ${name}`, padding.left + 15, 28);
+        // Título
+        ctx.fillStyle = '#e1e5eb';
+        ctx.font = 'bold 16px Inter';
+        ctx.textAlign = 'left';
+        ctx.fillText(`${symbol} - ${name}`, padding.left + 15, 28);
 
-                // Crosshair
-                if (hoveredIndex !== null && data[hoveredIndex]) {
-                    const hx = padding.left + (hoveredIndex / (data.length - 1)) * chartW;
-                    const hy = padding.top + (1 - (data[hoveredIndex].close - min) / range) * chartH;
-                    ctx.setLineDash([4, 4]);
-                    ctx.strokeStyle = '#4a5568';
-                    ctx.beginPath();
-                    ctx.moveTo(hx, padding.top);
-                    ctx.lineTo(hx, height - padding.bottom);
-                    ctx.stroke();
-                    ctx.beginPath();
-                    ctx.moveTo(padding.left, hy);
-                    ctx.lineTo(width - padding.right, hy);
-                    ctx.stroke();
-                    ctx.setLineDash([]);
-                }
+        // Crosshair si hay hover
+        if (hoveredIndex !== null && data[hoveredIndex]) {
+            const hx = padding.left + (hoveredIndex / (data.length - 1)) * chartW;
+            const hy = padding.top + (1 - (data[hoveredIndex].close - min) / range) * chartH;
+            
+            ctx.setLineDash([4, 4]);
+            ctx.strokeStyle = '#4a5568';
+            ctx.lineWidth = 1;
+            
+            ctx.beginPath();
+            ctx.moveTo(hx, padding.top);
+            ctx.lineTo(hx, height - padding.bottom);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(padding.left, hy);
+            ctx.lineTo(width - padding.right, hy);
+            ctx.stroke();
+            ctx.setLineDash([]);
 
-            }, [data, symbol, name, width, height, hoveredIndex]);
+            ctx.beginPath();
+            ctx.arc(hx, hy, 6, 0, Math.PI * 2);
+            ctx.fillStyle = '#667eea';
+            ctx.fill();
+        }
 
-            return (
-                <div style={{ position: 'relative' }}>
-                    <canvas
-                        ref={canvasRef}
-                        width={width}
-                        height={height}
-                        style={{ width, height, cursor: 'crosshair', borderRadius: 12 }}
-                        onMouseMove={(e) => {
-                            const rect = canvasRef.current.getBoundingClientRect();
-                            const x = e.clientX - rect.left;
-                            const padding = { left: 10, right: 80 };
-                            const chartW = width - padding.left - padding.right;
-                            const index = Math.round(((x - padding.left) / chartW) * (data.length - 1));
-                            if (index >= 0 && index < data.length) setHoveredIndex(index);
-                        }}
-                        onMouseLeave={() => setHoveredIndex(null)}
-                        onMouseEnter={playHover}
-                    />
-                </div>
-            );
-        };
+    }, [data, symbol, name, width, height, hoveredIndex]);
+
+    return (
+        <div style={{ position: 'relative' }}>
+            <canvas
+                ref={canvasRef}
+                width={width}
+                height={height}
+                style={{ 
+                    width: width, 
+                    height: height, 
+                    cursor: 'crosshair', 
+                    borderRadius: 12,
+                    display: 'block'
+                }}
+                onMouseMove={(e) => {
+                    const rect = canvasRef.current.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const padding = { left: 10, right: 80 };
+                    const chartW = width - padding.left - padding.right;
+                    const index = Math.round(((x - padding.left) / chartW) * (data.length - 1));
+                    if (index >= 0 && index < data.length) setHoveredIndex(index);
+                }}
+                onMouseLeave={() => setHoveredIndex(null)}
+                onMouseEnter={playHover}
+            />
+        </div>
+    );
+};
 
         // ==================== NEWS TICKER ====================
         const NewsTicker = ({ onNewsSpeak, playHover }) => {
