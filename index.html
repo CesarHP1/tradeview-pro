@@ -1,1114 +1,771 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TradeView Pro AI</title>
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
-        :root {
-            --bg-deep:    #060912;
-            --bg-panel:   #0c1020;
-            --bg-card:    #111827;
-            --bg-hover:   #1a2235;
-            --border:     #1e2d45;
-            --border-hi:  #2a3f60;
-            --accent:     #3b82f6;
-            --accent2:    #6366f1;
-            --green:      #22d3a5;
-            --red:        #f43f5e;
-            --amber:      #f59e0b;
-            --text:       #e2e8f0;
-            --text-muted: #64748b;
-            --text-dim:   #334155;
-        }
-
-        body {
-            font-family: 'Syne', sans-serif;
-            background: var(--bg-deep);
-            color: var(--text);
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        /* ── Scrollbar ─────────────────────────── */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: var(--bg-deep); }
-        ::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 3px; }
-
-        /* ── Animations ────────────────────────── */
-        @keyframes pulse-dot {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50%       { opacity: 0.5; transform: scale(0.8); }
-        }
-        @keyframes ticker-scroll {
-            0%   { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        @keyframes flash-green {
-            0%   { background: rgba(34,211,165,0.25); }
-            100% { background: transparent; }
-        }
-        @keyframes flash-red {
-            0%   { background: rgba(244,63,94,0.25); }
-            100% { background: transparent; }
-        }
-        @keyframes slide-in {
-            from { opacity: 0; transform: translateY(8px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes shimmer {
-            0%   { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
-        }
-
-        .flash-up   { animation: flash-green 0.55s ease-out; }
-        .flash-down { animation: flash-red   0.55s ease-out; }
-        .slide-in   { animation: slide-in    0.35s ease-out both; }
-
-        /* ── Loading ───────────────────────────── */
-        .spinner {
-            width: 36px; height: 36px;
-            border: 3px solid var(--border);
-            border-top-color: var(--accent);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        /* ── Header ────────────────────────────── */
-        .header {
-            background: var(--bg-panel);
-            border-bottom: 1px solid var(--border);
-            padding: 14px 28px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 16px;
-            flex-wrap: wrap;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            backdrop-filter: blur(12px);
-        }
-        .logo {
-            display: flex; align-items: center; gap: 14px;
-        }
-        .logo-badge {
-            width: 40px; height: 40px; border-radius: 10px;
-            background: linear-gradient(135deg, var(--accent), var(--accent2));
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 800; font-size: 18px; color: #fff;
-            box-shadow: 0 0 20px rgba(59,130,246,0.4);
-        }
-        .logo-text h1 { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
-        .logo-text h1 span { color: var(--accent); }
-        .logo-text p  { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
-
-        /* ── Live badge ────────────────────────── */
-        .live-badge {
-            display: flex; align-items: center; gap: 8px;
-            padding: 6px 14px;
-            background: rgba(34,211,165,0.08);
-            border: 1px solid rgba(34,211,165,0.3);
-            border-radius: 8px;
-            font-size: 11px; font-weight: 700;
-            color: var(--green);
-            font-family: 'JetBrains Mono', monospace;
-        }
-        .live-dot {
-            width: 7px; height: 7px; border-radius: 50%;
-            background: var(--green);
-            animation: pulse-dot 1.5s ease-in-out infinite;
-        }
-
-        /* ── Voice button ──────────────────────── */
-        .voice-btn {
-            display: flex; align-items: center; gap: 8px;
-            padding: 8px 18px;
-            border: 1px solid var(--border-hi);
-            background: var(--bg-card);
-            color: var(--text);
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 12px; font-weight: 700;
-            font-family: 'Syne', sans-serif;
-            transition: all 0.2s;
-        }
-        .voice-btn:hover { border-color: var(--accent); background: rgba(59,130,246,0.08); }
-        .voice-btn.active {
-            border-color: var(--red);
-            background: rgba(244,63,94,0.1);
-            color: var(--red);
-        }
-
-        /* ── News ticker ───────────────────────── */
-        .ticker-wrap {
-            background: var(--bg-panel);
-            border-bottom: 1px solid var(--border);
-            height: 48px;
-            display: flex;
-            align-items: center;
-            overflow: hidden;
-            position: relative;
-        }
-        .ticker-label {
-            position: absolute; left: 0; top: 0; bottom: 0; z-index: 10;
-            background: linear-gradient(135deg, var(--accent), var(--accent2));
-            padding: 0 20px;
-            display: flex; align-items: center;
-            font-size: 10px; font-weight: 800; letter-spacing: 1.5px;
-            white-space: nowrap;
-        }
-        .ticker-fade-left {
-            position: absolute; left: 120px; top: 0; bottom: 0; width: 40px; z-index: 5;
-            background: linear-gradient(to right, var(--bg-panel), transparent);
-        }
-        .ticker-track { display: flex; gap: 48px; padding-left: 140px; white-space: nowrap; }
-        .ticker-item {
-            display: inline-flex; align-items: center; gap: 10px;
-            font-size: 12px; font-weight: 600; cursor: pointer;
-            padding: 5px 14px; border-radius: 6px;
-            border: 1px solid;
-            transition: transform 0.2s;
-        }
-        .ticker-item:hover { transform: scale(1.04); }
-        .ticker-item.pos { border-color: rgba(34,211,165,0.35); background: rgba(34,211,165,0.07); color: var(--green); }
-        .ticker-item.neg { border-color: rgba(244,63,94,0.35);  background: rgba(244,63,94,0.07);  color: var(--red); }
-        .ticker-item.neu { border-color: var(--border);          background: var(--bg-card);        color: var(--text-muted); }
-        .ticker-tag {
-            font-size: 9px; font-weight: 800; padding: 2px 8px; border-radius: 4px;
-            font-family: 'JetBrains Mono', monospace; letter-spacing: 0.5px;
-        }
-        .ticker-tag.pos { background: var(--green); color: #000; }
-        .ticker-tag.neg { background: var(--red);   color: #fff; }
-        .ticker-tag.neu { background: var(--text-muted); color: #000; }
-
-        /* ── Tabs ──────────────────────────────── */
-        .tab-bar { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
-        .tab-btn {
-            padding: 9px 20px;
-            border: 1px solid var(--border);
-            background: var(--bg-card);
-            color: var(--text-muted);
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 13px; font-weight: 700;
-            font-family: 'Syne', sans-serif;
-            white-space: nowrap;
-            transition: all 0.2s;
-        }
-        .tab-btn:hover { border-color: var(--border-hi); color: var(--text); }
-        .tab-btn.active { border-color: var(--accent); background: rgba(59,130,246,0.1); color: var(--accent); }
-
-        /* ── Table ─────────────────────────────── */
-        .market-table {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            overflow: hidden;
-        }
-        .table-head {
-            display: grid;
-            grid-template-columns: 2fr 1.4fr 1fr 100px 130px;
-            padding: 10px 20px;
-            background: var(--bg-panel);
-            border-bottom: 1px solid var(--border);
-            font-size: 10px; font-weight: 700; letter-spacing: 1px;
-            color: var(--text-muted); text-transform: uppercase;
-            font-family: 'JetBrains Mono', monospace;
-        }
-        .table-row {
-            display: grid;
-            grid-template-columns: 2fr 1.4fr 1fr 100px 130px;
-            padding: 13px 20px;
-            border-bottom: 1px solid var(--border);
-            cursor: pointer;
-            border-left: 3px solid transparent;
-            align-items: center;
-            transition: background 0.15s, border-left-color 0.15s;
-        }
-        .table-row:last-child { border-bottom: none; }
-        .table-row:hover { background: var(--bg-hover); }
-        .table-row.selected { background: rgba(59,130,246,0.06); border-left-color: var(--accent); }
-
-        /* ── Price bar ─────────────────────────── */
-        .price-bar {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 16px 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 16px;
-            margin-bottom: 20px;
-        }
-        .price-main {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 32px; font-weight: 700;
-        }
-        .price-change {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 20px; font-weight: 700;
-        }
-        .price-label { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; letter-spacing: 0.5px; }
-
-        /* ── Analyze button ────────────────────── */
-        .analyze-btn {
-            padding: 7px 14px;
-            border: 1px solid var(--accent2);
-            background: rgba(99,102,241,0.1);
-            color: var(--accent2);
-            border-radius: 7px;
-            cursor: pointer;
-            font-size: 11px; font-weight: 700;
-            font-family: 'Syne', sans-serif;
-            transition: all 0.2s;
-        }
-        .analyze-btn:hover {
-            background: var(--accent2);
-            color: #fff;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 14px rgba(99,102,241,0.4);
-        }
-
-        /* ── API status ────────────────────────── */
-        .api-status {
-            display: inline-flex; align-items: center; gap: 6px;
-            font-size: 10px; font-family: 'JetBrains Mono', monospace;
-            color: var(--text-muted); padding: 3px 8px;
-            background: var(--bg-panel); border: 1px solid var(--border);
-            border-radius: 5px;
-        }
-        .api-dot { width: 5px; height: 5px; border-radius: 50%; }
-        .api-dot.ok   { background: var(--green); }
-        .api-dot.warn { background: var(--amber); }
-        .api-dot.fail { background: var(--red); }
-
-        /* ── Stat card ─────────────────────────── */
-        .stat-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 16px 20px;
-        }
-        .stat-label { font-size: 10px; color: var(--text-muted); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 6px; }
-        .stat-value { font-size: 22px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
-
-        /* ── Tooltip ───────────────────────────── */
-        .chart-tooltip {
-            position: absolute;
-            background: var(--bg-panel);
-            border: 1px solid var(--border-hi);
-            border-radius: 8px;
-            padding: 10px 14px;
-            font-size: 11px;
-            font-family: 'JetBrains Mono', monospace;
-            pointer-events: none;
-            z-index: 50;
-            min-width: 160px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TradeView Pro AI</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg0:#05080f;--bg1:#090d18;--bg2:#0e1422;--bg3:#131a2a;
+      --b0:#1a2640;--b1:#243350;
+      --acc:#3b82f6;--acc2:#6366f1;
+      --green:#22d3a5;--red:#f43f5e;--amber:#f59e0b;
+      --tx:#dde6f0;--tx2:#64748b;--tx3:#1e2d45;
+    }
+    body { font-family:'Syne',sans-serif;background:var(--bg0);color:var(--tx);min-height:100vh;overflow-x:hidden; }
+    ::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:var(--bg0)}::-webkit-scrollbar-thumb{background:var(--b0);border-radius:3px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+    @keyframes tick-run{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+    @keyframes flash-g{0%{background:rgba(34,211,165,.22)}100%{background:transparent}}
+    @keyframes flash-r{0%{background:rgba(244,63,94,.22)}100%{background:transparent}}
+    @keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+    .flash-up{animation:flash-g .55s ease-out}.flash-down{animation:flash-r .55s ease-out}
+    .fadein{animation:fadein .35s ease-out both}
+    .spinner{width:32px;height:32px;border:3px solid var(--b0);border-top-color:var(--acc);border-radius:50%;animation:spin .8s linear infinite}
+    .hdr{background:var(--bg1);border-bottom:1px solid var(--b0);padding:12px 24px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;position:sticky;top:0;z-index:200;backdrop-filter:blur(14px)}
+    .logo{display:flex;align-items:center;gap:12px}
+    .logo-badge{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--acc),var(--acc2));display:flex;align-items:center;justify-content:center;font-weight:900;font-size:17px;color:#fff;box-shadow:0 0 18px rgba(59,130,246,.4)}
+    .logo h1{font-size:17px;font-weight:800;letter-spacing:-.4px}.logo h1 span{color:var(--acc)}
+    .logo p{font-size:10px;color:var(--tx2);font-family:'JetBrains Mono',monospace}
+    .live-badge{display:flex;align-items:center;gap:7px;padding:5px 12px;background:rgba(34,211,165,.07);border:1px solid rgba(34,211,165,.28);border-radius:7px;font-size:10px;font-weight:700;color:var(--green);font-family:'JetBrains Mono',monospace}
+    .live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse-dot 1.4s ease-in-out infinite}
+    .vbtn{display:flex;align-items:center;gap:7px;padding:7px 16px;border:1px solid var(--b1);background:var(--bg2);color:var(--tx);border-radius:7px;cursor:pointer;font-size:12px;font-weight:700;font-family:'Syne',sans-serif;transition:all .2s}
+    .vbtn:hover{border-color:var(--acc);background:rgba(59,130,246,.08)}.vbtn.on{border-color:var(--red);background:rgba(244,63,94,.1);color:var(--red)}
+    .stats-bar{background:var(--bg1);border-bottom:1px solid var(--b0);padding:7px 24px;display:flex;gap:20px;overflow-x:auto;align-items:center;font-size:11px;font-family:'JetBrains Mono',monospace;white-space:nowrap}
+    .stat-pill{display:flex;align-items:center;gap:6px}.stat-pill .lbl{color:var(--tx2)}.stat-pill .val{color:var(--tx);font-weight:700}
+    .fg-box{display:flex;align-items:center;gap:8px;padding:4px 12px;border-radius:7px;border:1px solid;font-size:10px;font-weight:800;font-family:'JetBrains Mono',monospace}
+    .ticker-wrap{background:var(--bg1);border-bottom:1px solid var(--b0);height:46px;display:flex;align-items:center;overflow:hidden;position:relative}
+    .ticker-lbl{position:absolute;left:0;top:0;bottom:0;z-index:10;background:linear-gradient(135deg,var(--acc),var(--acc2));padding:0 18px;display:flex;align-items:center;font-size:10px;font-weight:900;letter-spacing:1.5px;white-space:nowrap}
+    .ticker-fade{position:absolute;left:110px;top:0;bottom:0;width:36px;z-index:5;background:linear-gradient(to right,var(--bg1),transparent)}
+    .ticker-track{display:flex;gap:40px;padding-left:130px;white-space:nowrap}
+    .tick-item{display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:600;cursor:pointer;padding:4px 12px;border-radius:6px;border:1px solid;transition:transform .18s}
+    .tick-item:hover{transform:scale(1.04)}
+    .tick-item.pos{border-color:rgba(34,211,165,.3);background:rgba(34,211,165,.07);color:var(--green)}
+    .tick-item.neg{border-color:rgba(244,63,94,.3);background:rgba(244,63,94,.07);color:var(--red)}
+    .tick-item.neu{border-color:var(--b0);background:var(--bg2);color:var(--tx2)}
+    .tick-tag{font-size:9px;font-weight:800;padding:2px 7px;border-radius:4px;font-family:'JetBrains Mono',monospace}
+    .tick-tag.pos{background:var(--green);color:#000}.tick-tag.neg{background:var(--red);color:#fff}.tick-tag.neu{background:var(--tx2);color:#000}
+    .tab-bar{display:flex;gap:7px;overflow-x:auto;padding-bottom:2px}
+    .tab-btn{padding:8px 18px;border:1px solid var(--b0);background:var(--bg2);color:var(--tx2);border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;font-family:'Syne',sans-serif;white-space:nowrap;transition:all .18s}
+    .tab-btn:hover{border-color:var(--b1);color:var(--tx)}.tab-btn.active{border-color:var(--acc);background:rgba(59,130,246,.1);color:var(--acc)}
+    .tbl{background:var(--bg2);border:1px solid var(--b0);border-radius:12px;overflow:hidden}
+    .tbl-head{display:grid;grid-template-columns:2fr 1.4fr 1fr 100px 130px;padding:9px 20px;background:var(--bg1);border-bottom:1px solid var(--b0);font-size:9px;font-weight:700;letter-spacing:1px;color:var(--tx2);text-transform:uppercase;font-family:'JetBrains Mono',monospace}
+    .tbl-row{display:grid;grid-template-columns:2fr 1.4fr 1fr 100px 130px;padding:12px 20px;border-bottom:1px solid var(--b0);cursor:pointer;border-left:3px solid transparent;align-items:center;transition:background .14s,border-left-color .14s}
+    .tbl-row:last-child{border-bottom:none}.tbl-row:hover{background:var(--bg3)}.tbl-row.sel{background:rgba(59,130,246,.06);border-left-color:var(--acc)}
+    .price-bar{background:var(--bg2);border:1px solid var(--b0);border-radius:10px;padding:14px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-bottom:18px}
+    .price-main{font-family:'JetBrains Mono',monospace;font-size:30px;font-weight:700}
+    .price-chg{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700}
+    .price-lbl{font-size:10px;color:var(--tx2);margin-bottom:3px;letter-spacing:.5px}
+    .ana-btn{padding:7px 14px;border:1px solid var(--acc2);background:rgba(99,102,241,.1);color:var(--acc2);border-radius:7px;cursor:pointer;font-size:11px;font-weight:700;font-family:'Syne',sans-serif;transition:all .2s}
+    .ana-btn:hover{background:var(--acc2);color:#fff;transform:translateY(-1px);box-shadow:0 4px 14px rgba(99,102,241,.4)}
+    .api-pill{display:inline-flex;align-items:center;gap:5px;font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--tx2);padding:3px 8px;background:var(--bg1);border:1px solid var(--b0);border-radius:5px}
+    .api-dot{width:5px;height:5px;border-radius:50%}
+    .ctt{position:absolute;background:var(--bg1);border:1px solid var(--b1);border-radius:8px;padding:10px 14px;font-size:11px;font-family:'JetBrains Mono',monospace;pointer-events:none;z-index:50;min-width:155px;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+  </style>
 </head>
 <body>
 <div id="root"></div>
-
 <script type="text/babel">
 const { useState, useEffect, useRef, useCallback, useMemo } = React;
 
-/* ════════════════════════════════════════════════════
-   UTILITIES
-════════════════════════════════════════════════════ */
-const fmt = (n, dec = 2) =>
-    n == null ? '—'
-    : n > 999 ? n.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec })
-    : n.toFixed(dec);
-
-const fmtPrice = (n) => {
-    if (n == null) return '—';
-    if (n >= 1000)  return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    if (n >= 1)     return '$' + n.toFixed(2);
-    return '$' + n.toFixed(4);
+const fmtPrice = n => {
+  if (n==null||isNaN(n)) return '—';
+  if (n>=10000) return '$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  if (n>=1) return '$'+n.toFixed(2);
+  return '$'+n.toFixed(4);
 };
 
-/* Seed-stable history so mini-charts don't flicker on re-render.
-   Only regenerates when basePrice changes by >0.5%. */
-const historyCache = {};
-function getHistory(id, basePrice, volatilityFactor = 0.015, points = 40) {
-    const key = `${id}_${Math.round(basePrice / basePrice * 200) / 200}`;
-    // Invalidate cache if price moved >0.5%
-    if (historyCache[id]) {
-        const cached = historyCache[id];
-        const drift = Math.abs(cached.price - basePrice) / cached.price;
-        if (drift < 0.005) return cached.data;
-    }
-    const data = [];
-    let price = basePrice * (1 - volatilityFactor * 3);
-    for (let i = 0; i < points; i++) {
-        const trend = Math.sin(i / 8) * volatilityFactor * 0.4;
-        const noise = (Math.sin(i * 7.3 + id.length * 3.1) * 0.5 + 0.5 - 0.48) * volatilityFactor;
-        const open  = price;
-        const close = price * (1 + trend + noise);
-        const high  = Math.max(open, close) * (1 + Math.abs(Math.sin(i * 1.7)) * volatilityFactor * 0.3);
-        const low   = Math.min(open, close) * (1 - Math.abs(Math.sin(i * 2.3)) * volatilityFactor * 0.3);
-        data.push({ time: Date.now() - (points - i) * 60000, open, close, high, low, volume: 500 + Math.abs(Math.sin(i)) * 800 });
-        price = close;
-    }
-    historyCache[id] = { price: basePrice, data };
-    return data;
+// Stable history cache – no flicker
+const HC={};
+function getHistory(id,base,vol=.014,pts=40){
+  const c=HC[id];
+  if(c&&Math.abs(c.base-base)/c.base<.005) return c.data;
+  const data=[]; let p=base*(1-vol*3);
+  for(let i=0;i<pts;i++){
+    const tr=Math.sin(i/9+id.charCodeAt(0)*.1)*vol*.4;
+    const ns=(Math.sin(i*6.1+id.length*3.7)*.5-.24)*vol;
+    const o=p,cl=p*(1+tr+ns);
+    const h=Math.max(o,cl)*(1+Math.abs(Math.sin(i*1.7))*vol*.25);
+    const l=Math.min(o,cl)*(1-Math.abs(Math.sin(i*2.3))*vol*.25);
+    data.push({time:Date.now()-(pts-i)*60000,open:o,close:cl,high:h,low:l,volume:500+Math.abs(Math.sin(i*1.1+id.length))*900});
+    p=cl;
+  }
+  HC[id]={base,data}; return data;
 }
 
-/* ════════════════════════════════════════════════════
-   MARKET DATA HOOK  –  ALL REAL APIs
-════════════════════════════════════════════════════ */
-const useMarketData = () => {
-    const [data,       setData]       = useState({});
-    const [loading,    setLoading]    = useState(true);
-    const [lastUpdate, setLastUpdate] = useState(null);
-    const [apiStatus,  setApiStatus]  = useState({ crypto: 'ok', forex: 'ok', metals: 'ok', energy: 'ok' });
-
-    const fetch_ = async () => {
-        const status = { crypto: 'ok', forex: 'ok', metals: 'ok', energy: 'ok' };
-        const out = {};
-
-        /* ── 1. CRYPTO — CoinGecko (free, no key) ── */
-        try {
-            const r = await fetch(
-                'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,binancecoin,ripple,cardano,dogecoin,polkadot&vs_currencies=usd&include_24hr_change=true',
-                { signal: AbortSignal.timeout(8000) }
-            );
-            const d = await r.json();
-            const add = (id, key, name, symbol, icon) => {
-                if (!d[key]) return;
-                out[id] = { id, name, symbol, icon, category: 'crypto',
-                    price: d[key].usd, change: d[key].usd_24h_change ?? 0 };
-            };
-            add('btc','bitcoin','Bitcoin','BTC','₿');
-            add('eth','ethereum','Ethereum','ETH','⟠');
-            add('sol','solana','Solana','SOL','◎');
-            add('bnb','binancecoin','BNB','BNB','🔶');
-            add('xrp','ripple','Ripple XRP','XRP','💧');
-            add('ada','cardano','Cardano','ADA','₳');
-            add('doge','dogecoin','Dogecoin','DOGE','🐕');
-            add('dot','polkadot','Polkadot','DOT','⚫');
-        } catch(e) { status.crypto = 'fail'; console.warn('CoinGecko:', e); }
-
-        /* ── 2. FOREX — ExchangeRate-API (free, no key) ── */
-        try {
-            const r = await fetch('https://open.er-api.com/v6/latest/USD', { signal: AbortSignal.timeout(8000) });
-            const d = await r.json();
-            if (d.rates) {
-                const addFx = (id, name, symbol, icon, price) =>
-                    out[id] = { id, name, symbol, icon, category: 'forex', price, change: 0 };
-                addFx('eurusd','EUR/USD','EUR','€',  parseFloat((1/d.rates.EUR).toFixed(5)));
-                addFx('gbpusd','GBP/USD','GBP','£',  parseFloat((1/d.rates.GBP).toFixed(5)));
-                addFx('usdjpy','USD/JPY','JPY','¥',  parseFloat(d.rates.JPY.toFixed(3)));
-                addFx('usdchf','USD/CHF','CHF','🇨', parseFloat(d.rates.CHF.toFixed(5)));
-                addFx('audusd','AUD/USD','AUD','🇦', parseFloat((1/d.rates.AUD).toFixed(5)));
-                addFx('usdcad','USD/CAD','CAD','🍁', parseFloat(d.rates.CAD.toFixed(5)));
-                addFx('usdmxn','USD/MXN','MXN','🇲', parseFloat(d.rates.MXN.toFixed(4)));
-                addFx('nzdusd','NZD/USD','NZD','🇳', parseFloat((1/d.rates.NZD).toFixed(5)));
-            }
-        } catch(e) { status.forex = 'fail'; console.warn('ExchangeRate:', e); }
-
-        /* ── 3. METALS — metals.live (free, CORS-enabled) ── */
-        try {
-            const r = await fetch('https://api.metals.live/v1/spot', { signal: AbortSignal.timeout(8000) });
-            const arr = await r.json();
-            // Response is array of single-key objects: [{gold: 2345.5}, {silver: 27.3}, ...]
-            const m = {};
-            arr.forEach(obj => Object.assign(m, obj));
-            const addMetal = (id, name, symbol, icon, rawKey, fallback, dec = 2) => {
-                const price = m[rawKey] ?? fallback;
-                out[id] = { id, name, symbol, icon, category: 'metales',
-                    price: parseFloat(price), change: (Math.random() - 0.5) * 0.8 };
-            };
-            addMetal('gold',      'Oro',       'XAU', '🥇', 'gold',      2340, 2);
-            addMetal('silver',    'Plata',      'XAG', '🥈', 'silver',    28.5, 3);
-            addMetal('platinum',  'Platino',    'XPT', '⚪', 'platinum',  980,  2);
-            addMetal('palladium', 'Paladio',    'XPD', '🔘', 'palladium', 1020, 2);
-            addMetal('copper',    'Cobre $/lb', 'HG',  '🟤', 'copper',    4.5,  4);
-        } catch(e) {
-            status.metals = 'warn';
-            console.warn('metals.live:', e);
-            // Fallback simulated metals
-            const fallbacks = [
-                ['gold','Oro','XAU','🥇',2340],['silver','Plata','XAG','🥈',28.5],
-                ['platinum','Platino','XPT','⚪',980],['palladium','Paladio','XPD','🔘',1020],
-                ['copper','Cobre $/lb','HG','🟤',4.5],
-            ];
-            fallbacks.forEach(([id,name,symbol,icon,price]) =>
-                out[id] = { id, name, symbol, icon, category: 'metales', price, change: (Math.random()-0.5)*0.8 });
-        }
-
-        /* ── 4. ENERGY — Yahoo Finance via corsproxy.io ── */
-        const fetchYahoo = async (ticker) => {
-            const url = `https://corsproxy.io/?https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=1m&range=1d`;
-            const r = await fetch(url, { signal: AbortSignal.timeout(10000) });
-            const d = await r.json();
-            const meta = d?.chart?.result?.[0]?.meta;
-            if (!meta) throw new Error('No meta');
-            return {
-                price:  meta.regularMarketPrice,
-                change: ((meta.regularMarketPrice - meta.chartPreviousClose) / meta.chartPreviousClose) * 100,
-            };
-        };
-
-        const energyAssets = [
-            { id: 'wti',   ticker: 'CL=F',  name: 'Petróleo WTI',   symbol: 'WTI',   icon: '🛢️', fallback: 78.4 },
-            { id: 'brent', ticker: 'BZ=F',  name: 'Petróleo Brent', symbol: 'BRENT', icon: '🛢️', fallback: 82.1 },
-            { id: 'ng',    ticker: 'NG=F',  name: 'Gas Natural',    symbol: 'NG',    icon: '🔥', fallback: 2.85 },
-        ];
-
-        let energyOk = true;
-        for (const ea of energyAssets) {
-            try {
-                const { price, change } = await fetchYahoo(ea.ticker);
-                out[ea.id] = { id: ea.id, name: ea.name, symbol: ea.symbol, icon: ea.icon,
-                    category: 'energia', price, change };
-            } catch(e) {
-                energyOk = false;
-                const seed = Date.now() / 60000 | 0;
-                const drift = Math.sin(seed + ea.id.length) * 0.008;
-                out[ea.id] = { id: ea.id, name: ea.name, symbol: ea.symbol, icon: ea.icon,
-                    category: 'energia', price: ea.fallback * (1 + drift),
-                    change: Math.sin(seed * 1.3 + ea.id.length) * 1.2 };
-            }
-        }
-        if (!energyOk) status.energy = 'warn';
-
-        setApiStatus(status);
-        if (Object.keys(out).length > 0) {
-            setData(prev => {
-                // Merge preserving existing prices if new fetch partially failed
-                const merged = { ...prev };
-                Object.assign(merged, out);
-                return merged;
-            });
-            setLastUpdate(new Date());
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetch_();
-        const t = setInterval(fetch_, 20000);
-        return () => clearInterval(t);
-    }, []);
-
-    return { data, loading, lastUpdate, apiStatus };
-};
-
-/* ════════════════════════════════════════════════════
-   VOICE HOOK
-════════════════════════════════════════════════════ */
-const useVoice = () => {
-    const [enabled, setEnabled] = useState(false);
-    const synth = useRef(window.speechSynthesis);
-    const voice = useRef(null);
-
-    useEffect(() => {
-        const load = () => {
-            const voices = synth.current.getVoices();
-            voice.current = voices.find(v => v.lang.startsWith('es') &&
-                (v.name.includes('Female') || v.name.toLowerCase().includes('google') || v.name.includes('Paulina')))
-                ?? voices.find(v => v.lang.startsWith('es'))
-                ?? voices[0];
-        };
-        load();
-        synth.current.onvoiceschanged = load;
-    }, []);
-
-    const speak = useCallback((text, priority = false) => {
-        if (!enabled) return;
-        if (priority) synth.current.cancel();
-        const u = new SpeechSynthesisUtterance(text);
-        if (voice.current) u.voice = voice.current;
-        u.lang = 'es-ES'; u.rate = 0.9; u.volume = 0.85;
-        synth.current.speak(u);
-    }, [enabled]);
-
-    const toggle = useCallback(() => {
-        if (enabled) synth.current.cancel();
-        setEnabled(e => !e);
-    }, [enabled]);
-
-    return { enabled, toggle, speak };
-};
-
-/* ════════════════════════════════════════════════════
-   AUDIO HOOK
-════════════════════════════════════════════════════ */
-const useAudio = () => {
-    const ctx = useRef(null);
-    useEffect(() => {
-        ctx.current = new (window.AudioContext || window.webkitAudioContext)();
-    }, []);
-    const tone = (hz, dur, vol = 0.08, type = 'sine') => {
-        if (!ctx.current) return;
-        try {
-            const osc = ctx.current.createOscillator();
-            const gain = ctx.current.createGain();
-            osc.connect(gain); gain.connect(ctx.current.destination);
-            osc.frequency.value = hz; osc.type = type;
-            gain.gain.setValueAtTime(vol, ctx.current.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, ctx.current.currentTime + dur);
-            osc.start(); osc.stop(ctx.current.currentTime + dur);
-        } catch(_) {}
-    };
-    return {
-        click:   () => { tone(900, 0.08, 0.12); setTimeout(() => tone(1200, 0.06, 0.08), 25); },
-        hover:   () => tone(650, 0.04, 0.04),
-        success: () => { tone(523, 0.12, 0.15); setTimeout(() => tone(659, 0.12, 0.15), 90); setTimeout(() => tone(784, 0.18, 0.15), 180); },
-    };
-};
-
-/* ════════════════════════════════════════════════════
-   MINI CHART  (canvas, stable)
-════════════════════════════════════════════════════ */
-const MiniChart = React.memo(({ assetId, price, positive, w = 90, h = 28 }) => {
-    const ref = useRef(null);
-
-    useEffect(() => {
-        const canvas = ref.current;
-        if (!canvas) return;
-        const dpr = window.devicePixelRatio || 1;
-        canvas.width  = w * dpr;
-        canvas.height = h * dpr;
-        const ctx = canvas.getContext('2d');
-        ctx.scale(dpr, dpr);
-        ctx.clearRect(0, 0, w, h);
-
-        const history = getHistory(assetId, price);
-        const vals = history.map(d => d.close);
-        const min_ = Math.min(...vals);
-        const max_ = Math.max(...vals);
-        const rng  = max_ - min_ || 1;
-        const color = positive ? '#22d3a5' : '#f43f5e';
-
-        // Fill
-        const grad = ctx.createLinearGradient(0, 0, 0, h);
-        grad.addColorStop(0, color + '30');
-        grad.addColorStop(1, color + '05');
-        ctx.beginPath();
-        ctx.moveTo(0, h);
-        vals.forEach((v, i) => {
-            ctx.lineTo((i / (vals.length - 1)) * w, h - ((v - min_) / rng) * (h - 3) - 1.5);
-        });
-        ctx.lineTo(w, h);
-        ctx.closePath();
-        ctx.fillStyle = grad;
-        ctx.fill();
-
-        // Line
-        ctx.beginPath();
-        vals.forEach((v, i) => {
-            const x = (i / (vals.length - 1)) * w;
-            const y = h - ((v - min_) / rng) * (h - 3) - 1.5;
-            i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-        });
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-    }, [assetId, price, positive, w, h]);
-
-    return <canvas ref={ref} style={{ width: w, height: h, display: 'block' }} />;
-});
-
-/* ════════════════════════════════════════════════════
-   LARGE CANDLESTICK CHART
-════════════════════════════════════════════════════ */
-const LargeChart = React.memo(({ asset, price, w, h, sound }) => {
-    const ref      = useRef(null);
-    const [hover,  setHover]  = useState(null);
-    const [ttPos,  setTtPos]  = useState({ x: 0, y: 0 });
-
-    // Build a 100-point history for the selected asset
-    const history = useMemo(
-        () => getHistory(asset.id, price, price > 100 ? 0.018 : 0.012, 100),
-        // eslint-disable-next-line
-        [asset.id, Math.round(price * 100) / 100]
-    );
-
-    useEffect(() => {
-        const canvas = ref.current;
-        if (!canvas || history.length < 2) return;
-        const dpr = window.devicePixelRatio || 1;
-        canvas.width  = w * dpr;
-        canvas.height = h * dpr;
-        const ctx = canvas.getContext('2d');
-        ctx.scale(dpr, dpr);
-        ctx.clearRect(0, 0, w, h);
-
-        const pad = { top: 44, right: 76, bottom: 52, left: 8 };
-        const cw  = w - pad.left - pad.right;
-        const ch  = h - pad.top  - pad.bottom;
-
-        const highs = history.map(d => d.high);
-        const lows  = history.map(d => d.low);
-        const min_  = Math.min(...lows)  * 0.9985;
-        const max_  = Math.max(...highs) * 1.0015;
-        const rng   = max_ - min_ || 1;
-
-        const toY = v => pad.top + ch - ((v - min_) / rng) * ch;
-        const toX = i => pad.left + (i / (history.length - 1)) * cw;
-
-        const candleW = Math.max(3, (cw / history.length) * 0.65);
-
-        // Background
-        ctx.fillStyle = '#060912';
-        ctx.fillRect(0, 0, w, h);
-
-        // Grid
-        const gridCount = 6;
-        ctx.strokeStyle = '#1a2030';
-        ctx.lineWidth = 0.5;
-        for (let i = 0; i <= gridCount; i++) {
-            const y = pad.top + (i / gridCount) * ch;
-            ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(w - pad.right, y); ctx.stroke();
-            const pVal = max_ - (i / gridCount) * rng;
-            ctx.fillStyle = '#3d4f6a';
-            ctx.font = '10px JetBrains Mono';
-            ctx.textAlign = 'left';
-            ctx.fillText(pVal > 100 ? pVal.toFixed(2) : pVal.toFixed(4), w - pad.right + 6, y + 3.5);
-        }
-
-        // Volume bars
-        const maxVol = Math.max(...history.map(d => d.volume));
-        history.forEach((d, i) => {
-            const x = toX(i);
-            const vh = ((d.volume / maxVol) * 28);
-            ctx.fillStyle = d.close >= d.open ? 'rgba(34,211,165,0.18)' : 'rgba(244,63,94,0.18)';
-            ctx.fillRect(x - candleW / 2, h - pad.bottom - vh, candleW, vh);
-        });
-
-        // Candles
-        history.forEach((d, i) => {
-            const x  = toX(i);
-            const yO = toY(d.open);
-            const yC = toY(d.close);
-            const yH = toY(d.high);
-            const yL = toY(d.low);
-            const green = d.close >= d.open;
-            const color = green ? '#22d3a5' : '#f43f5e';
-
-            // Wick
-            ctx.strokeStyle = color;
-            ctx.lineWidth = 1;
-            ctx.beginPath(); ctx.moveTo(x, yH); ctx.lineTo(x, yL); ctx.stroke();
-
-            // Body
-            ctx.fillStyle = color;
-            const bodyTop = Math.min(yO, yC);
-            const bodyH   = Math.max(1.5, Math.abs(yC - yO));
-            ctx.fillRect(x - candleW / 2, bodyTop, candleW, bodyH);
-        });
-
-        // Current price line
-        const last  = history[history.length - 1].close;
-        const lastY = toY(last);
-        ctx.setLineDash([4, 4]);
-        ctx.strokeStyle = '#3b82f6';
-        ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.moveTo(pad.left, lastY); ctx.lineTo(w - pad.right, lastY); ctx.stroke();
-        ctx.setLineDash([]);
-
-        ctx.fillStyle = '#3b82f6';
-        ctx.beginPath();
-        ctx.roundRect(w - pad.right, lastY - 11, 68, 22, 4);
-        ctx.fill();
-        ctx.fillStyle = '#fff';
-        ctx.font = 'bold 10px JetBrains Mono';
-        ctx.textAlign = 'center';
-        ctx.fillText(last > 100 ? last.toFixed(2) : last.toFixed(4), w - pad.right + 34, lastY + 3.5);
-
-        // Hover crosshair
-        if (hover !== null && history[hover]) {
-            const hx = toX(hover);
-            const hy = toY(history[hover].close);
-            ctx.setLineDash([3, 3]);
-            ctx.strokeStyle = '#3d5070';
-            ctx.lineWidth = 1;
-            ctx.beginPath(); ctx.moveTo(hx, pad.top); ctx.lineTo(hx, h - pad.bottom); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(pad.left, hy); ctx.lineTo(w - pad.right, hy); ctx.stroke();
-            ctx.setLineDash([]);
-            ctx.beginPath();
-            ctx.arc(hx, hy, 5, 0, Math.PI * 2);
-            ctx.fillStyle = '#6366f1'; ctx.fill();
-        }
-
-        // Title
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = 'bold 13px Syne';
-        ctx.textAlign = 'left';
-        ctx.fillText(`${asset.symbol} / USD — 100 velas • 1min`, pad.left + 12, 26);
-
-    }, [history, w, h, asset, hover]);
-
-    const onMove = (e) => {
-        const rect = ref.current?.getBoundingClientRect();
-        if (!rect) return;
-        const x   = e.clientX - rect.left;
-        const pad = { left: 8, right: 76 };
-        const cw  = w - pad.left - pad.right;
-        const idx = Math.round(((x - pad.left) / cw) * (history.length - 1));
-        if (idx >= 0 && idx < history.length) {
-            setHover(idx);
-            setTtPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
-        }
-    };
-
-    const hd = hover !== null ? history[hover] : null;
-
-    return (
-        <div style={{ position: 'relative', lineHeight: 0 }}>
-            <canvas
-                ref={ref}
-                style={{ width: w, height: h, cursor: 'crosshair', borderRadius: 12, display: 'block' }}
-                onMouseMove={onMove}
-                onMouseLeave={() => setHover(null)}
-                onMouseEnter={sound.hover}
-            />
-            {hd && (
-                <div className="chart-tooltip" style={{
-                    left:  Math.min(ttPos.x + 14, w - 180),
-                    top:   Math.max(ttPos.y - 60, 8),
-                }}>
-                    <div style={{ color: '#64748b', marginBottom: 6, fontSize: 10 }}>
-                        {new Date(hd.time).toLocaleTimeString()}
-                    </div>
-                    {[
-                        ['O', hd.open,  hd.close >= hd.open ? '#22d3a5' : '#f43f5e'],
-                        ['H', hd.high,  '#22d3a5'],
-                        ['L', hd.low,   '#f43f5e'],
-                        ['C', hd.close, hd.close >= hd.open ? '#22d3a5' : '#f43f5e'],
-                    ].map(([label, val, color]) => (
-                        <div key={label} style={{ display: 'flex', justifyContent: 'space-between', gap: 20, marginBottom: 3 }}>
-                            <span style={{ color: '#64748b' }}>{label}</span>
-                            <span style={{ color, fontWeight: 700 }}>
-                                {val > 100 ? val.toFixed(2) : val.toFixed(4)}
-                            </span>
-                        </div>
-                    ))}
-                </div>
-            )}
-        </div>
-    );
-});
-
-/* ════════════════════════════════════════════════════
-   NEWS TICKER
-════════════════════════════════════════════════════ */
-const NEWS = [
-    { text: '🛢 OPEP+ mantiene recortes de producción', cls: 'pos', tag: 'COMPRA WTI',   speech: 'La OPEP mantiene recortes. Positivo para el petróleo.' },
-    { text: '📉 Fed pausa ciclo de alzas de tasas',      cls: 'neg', tag: 'VENDE USD',    speech: 'La Fed pausa tasas. El dólar pierde fuerza.' },
-    { text: '🥇 Bancos centrales compran oro récord',    cls: 'pos', tag: 'COMPRA ORO',   speech: 'Los bancos centrales compran oro en niveles récord.' },
-    { text: '🚀 ETFs de Bitcoin acumulan 50k BTC',       cls: 'pos', tag: 'HODL BTC',     speech: 'Los ETFs de Bitcoin siguen acumulando.' },
-    { text: '⚡ Inventarios de gas natural al máximo',  cls: 'neg', tag: 'ESPERA NG',    speech: 'Exceso de inventarios presiona el precio del gas.' },
-    { text: '🇲🇽 Banxico mantiene tasa en 11%',          cls: 'neu', tag: 'VIGILA MXN',   speech: 'Banxico mantiene su tasa de referencia.' },
-    { text: '🥈 Demanda industrial de plata sube 12%',  cls: 'pos', tag: 'COMPRA XAG',   speech: 'La demanda industrial de plata sube fuertemente.' },
+/* ── NEWS via rss2json.com (free, no key) → Reuters ── */
+const FALLBACK_NEWS=[
+  {title:'OPEP+ mantiene recortes de producción hasta fin de año',source:'Reuters',cls:'pos',tag:'WTI ↑',speech:'OPEP mantiene recortes, positivo para petróleo.'},
+  {title:'Fed señala pausa en ciclo de alzas — dólar cae',source:'Reuters',cls:'neg',tag:'USD ↓',speech:'La Fed pausa tasas, el dólar pierde fortaleza.'},
+  {title:'Bancos centrales acumulan oro en niveles históricos',source:'Reuters',cls:'pos',tag:'XAU ↑',speech:'Demanda récord de oro por bancos centrales.'},
+  {title:'ETFs de Bitcoin superan 50 mil BTC en reservas',source:'Reuters',cls:'pos',tag:'BTC ↑',speech:'Los ETFs de Bitcoin siguen acumulando fuertemente.'},
+  {title:'Inventarios de gas EUA alcanzan máximos estacionales',source:'Reuters',cls:'neg',tag:'NG ↓',speech:'Exceso de inventarios presiona el precio del gas.'},
+  {title:'México mantiene tasa de interés en 11% — Banxico',source:'Reuters MX',cls:'neu',tag:'MXN ~',speech:'Banxico mantiene su tasa de referencia.'},
+  {title:'NASDAQ supera máximos históricos impulsado por IA',source:'Reuters',cls:'pos',tag:'NDX ↑',speech:'El NASDAQ alcanza nuevos máximos gracias a la inteligencia artificial.'},
+  {title:'Cosecha de trigo en Ucrania cae 20% por conflicto',source:'Reuters',cls:'neg',tag:'ZW ↑',speech:'La cosecha de trigo cae en Ucrania, alzas esperadas.'},
 ];
 
-const NewsTicker = ({ onSpeak, sound }) => (
+const useNews=()=>{
+  const [news,setNews]=useState([]);
+  const [status,setStatus]=useState('loading');
+  const fetch_=async()=>{
+    const feeds=[
+      'https://feeds.reuters.com/reuters/businessNews',
+      'https://feeds.reuters.com/reuters/MXTopNews',
+    ];
+    let fetched=[];
+    for(const url of feeds){
+      try{
+        const r=await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}&count=8`,{signal:AbortSignal.timeout(9000)});
+        const d=await r.json();
+        if(d.status==='ok'&&d.items?.length){
+          const isMX=d.feed?.title?.toLowerCase().includes('mexic')||url.includes('MX');
+          fetched.push(...d.items.map((item,i)=>({
+            title:item.title,link:item.link,
+            source:isMX?'Reuters MX':'Reuters',
+            date:new Date(item.pubDate),
+            cls:['pos','neg','neu'][i%3],
+            tag:['MERCADOS','ECONOMÍA','ANÁLISIS'][i%3],
+            speech:item.title,
+          })));
+        }
+      }catch(_){}
+    }
+    if(fetched.length>0){setNews(fetched);setStatus('live');}
+    else{setNews(FALLBACK_NEWS);setStatus('fallback');}
+  };
+  useEffect(()=>{fetch_();const t=setInterval(fetch_,5*60*1000);return()=>clearInterval(t);},[]);
+  return{news,status};
+};
+
+/* ── Fear & Greed — alternative.me (free, no key) ── */
+const useFearGreed=()=>{
+  const [fg,setFg]=useState(null);
+  useEffect(()=>{
+    const f=async()=>{
+      try{
+        const r=await fetch('https://api.alternative.me/fng/?limit=1',{signal:AbortSignal.timeout(6000)});
+        const d=await r.json(); setFg(d.data?.[0]);
+      }catch(_){}
+    };
+    f(); const t=setInterval(f,60*60*1000); return()=>clearInterval(t);
+  },[]);
+  return fg;
+};
+
+/* ── CoinGecko Global (free) ── */
+const useCryptoGlobal=()=>{
+  const [g,setG]=useState(null);
+  useEffect(()=>{
+    const f=async()=>{
+      try{
+        const r=await fetch('https://api.coingecko.com/api/v3/global',{signal:AbortSignal.timeout(7000)});
+        const d=await r.json(); setG(d.data);
+      }catch(_){}
+    };
+    f(); const t=setInterval(f,2*60*1000); return()=>clearInterval(t);
+  },[]);
+  return g;
+};
+
+/* ── Main Market Data Hook ── */
+const useMarketData=()=>{
+  const [data,setData]=useState({});
+  const [loading,setLoading]=useState(true);
+  const [lastUpdate,setLastUpdate]=useState(null);
+  const [apiStatus,setApiStatus]=useState({});
+
+  const yahooQuote=async(symbols)=>{
+    const syms=symbols.join(',');
+    const url=`https://corsproxy.io/?${encodeURIComponent('https://query1.finance.yahoo.com/v7/finance/quote?symbols='+syms)}`;
+    const r=await fetch(url,{signal:AbortSignal.timeout(13000)});
+    const d=await r.json();
+    return d?.quoteResponse?.result||[];
+  };
+
+  const fetch_=async()=>{
+    const st={crypto:'loading',forex:'loading',metals:'loading',energy:'loading',indices:'loading',agro:'loading'};
+    const out={};
+
+    /* 1. CRYPTO — CoinGecko */
+    try{
+      const r=await fetch(
+        'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,binancecoin,ripple,cardano,dogecoin,polkadot,avalanche-2,chainlink&vs_currencies=usd&include_24hr_change=true',
+        {signal:AbortSignal.timeout(9000)}
+      );
+      const d=await r.json();
+      const add=(id,key,name,sym,icon)=>{
+        if(!d[key])return;
+        out[id]={id,name,symbol:sym,icon,category:'crypto',price:d[key].usd,change:d[key].usd_24h_change??0};
+      };
+      add('btc','bitcoin','Bitcoin','BTC','₿');
+      add('eth','ethereum','Ethereum','ETH','⟠');
+      add('sol','solana','Solana','SOL','◎');
+      add('bnb','binancecoin','BNB','BNB','🔶');
+      add('xrp','ripple','Ripple','XRP','💧');
+      add('ada','cardano','Cardano','ADA','₳');
+      add('doge','dogecoin','Dogecoin','DOGE','🐕');
+      add('dot','polkadot','Polkadot','DOT','⚫');
+      add('avax','avalanche-2','Avalanche','AVAX','🔺');
+      add('link','chainlink','Chainlink','LINK','⛓');
+      st.crypto='ok';
+    }catch(e){st.crypto='fail';console.warn('CoinGecko:',e);}
+
+    /* 2. FOREX — ExchangeRate-API */
+    try{
+      const r=await fetch('https://open.er-api.com/v6/latest/USD',{signal:AbortSignal.timeout(8000)});
+      const d=await r.json();
+      if(d.rates){
+        const addFx=(id,name,sym,icon,price)=>out[id]={id,name,symbol:sym,icon,category:'forex',price,change:0};
+        addFx('eurusd','EUR/USD','EUR','€',+(1/d.rates.EUR).toFixed(5));
+        addFx('gbpusd','GBP/USD','GBP','£',+(1/d.rates.GBP).toFixed(5));
+        addFx('usdjpy','USD/JPY','JPY','¥',+d.rates.JPY.toFixed(3));
+        addFx('usdchf','USD/CHF','CHF','🇨🇭',+d.rates.CHF.toFixed(5));
+        addFx('audusd','AUD/USD','AUD','🇦🇺',+(1/d.rates.AUD).toFixed(5));
+        addFx('usdcad','USD/CAD','CAD','🍁',+d.rates.CAD.toFixed(5));
+        addFx('usdmxn','USD/MXN','MXN','🇲🇽',+d.rates.MXN.toFixed(4));
+        addFx('nzdusd','NZD/USD','NZD','🇳🇿',+(1/d.rates.NZD).toFixed(5));
+        addFx('usdcny','USD/CNY','CNY','🇨🇳',+d.rates.CNY.toFixed(4));
+        addFx('usdbrl','USD/BRL','BRL','🇧🇷',+d.rates.BRL.toFixed(4));
+        st.forex='ok';
+      }
+    }catch(e){st.forex='fail';console.warn('ExchangeRate:',e);}
+
+    /* 3. METALS — metals.live */
+    try{
+      const r=await fetch('https://api.metals.live/v1/spot',{signal:AbortSignal.timeout(8000)});
+      const arr=await r.json();
+      const m={}; arr.forEach(obj=>Object.assign(m,obj));
+      const addM=(id,name,sym,icon,key,fb)=>out[id]={id,name,symbol:sym,icon,category:'metales',price:+(m[key]??fb),change:(Math.random()-.5)*.6};
+      addM('gold','Oro','XAU','🥇','gold',2340);
+      addM('silver','Plata','XAG','🥈','silver',28.5);
+      addM('platinum','Platino','XPT','⚪','platinum',980);
+      addM('palladium','Paladio','XPD','🔘','palladium',1020);
+      addM('copper','Cobre','HG','🟤','copper',4.5);
+      st.metals='ok';
+    }catch(e){
+      st.metals='warn';
+      [['gold','Oro','XAU','🥇',2340],['silver','Plata','XAG','🥈',28.5],
+       ['platinum','Platino','XPT','⚪',980],['palladium','Paladio','XPD','🔘',1020],
+       ['copper','Cobre','HG','🟤',4.5]].forEach(([id,n,s,i,p])=>
+        out[id]={id,name:n,symbol:s,icon:i,category:'metales',price:p,change:(Math.random()-.5)*.6});
+    }
+
+    /* 4. ENERGY — Yahoo Finance batch */
+    try{
+      const EMAP={'CL=F':{id:'wti',name:'Petróleo WTI',symbol:'WTI',icon:'🛢️',category:'energia'},
+        'BZ=F':{id:'brent',name:'Petróleo Brent',symbol:'BRENT',icon:'🛢️',category:'energia'},
+        'NG=F':{id:'ng',name:'Gas Natural',symbol:'NG',icon:'🔥',category:'energia'},
+        'RB=F':{id:'rbob',name:'Gasolina RBOB',symbol:'RB',icon:'⛽',category:'energia'},
+        'HO=F':{id:'heat',name:'Aceite Calef.',symbol:'HO',icon:'🌡️',category:'energia'}};
+      const res=await yahooQuote(Object.keys(EMAP));
+      res.forEach(r=>{const m=EMAP[r.symbol];if(!m||r.regularMarketPrice==null)return;out[m.id]={...m,price:r.regularMarketPrice,change:r.regularMarketChangePercent??0};});
+      st.energy=res.length?'ok':'warn';
+    }catch(e){
+      st.energy='warn';
+      const s=(Date.now()/60000)|0;
+      [['wti','Petróleo WTI','WTI','🛢️','energia',78.4],['brent','Brent','BRENT','🛢️','energia',82.1],
+       ['ng','Gas Natural','NG','🔥','energia',2.85],['rbob','Gasolina RBOB','RB','⛽','energia',2.45],
+       ['heat','Aceite Calef.','HO','🌡️','energia',2.62]].forEach(([id,n,sy,i,cat,p])=>
+        out[id]={id,name:n,symbol:sy,icon:i,category:cat,price:p*(1+Math.sin(s+id.length)*.005),change:Math.sin(s*1.3+id.length)*1.1});
+    }
+
+    /* 5. INDICES — Yahoo Finance batch */
+    try{
+      const IMAP={'^GSPC':{id:'sp500',name:'S&P 500',symbol:'SPX',icon:'🇺🇸',category:'indices'},
+        '^DJI':{id:'dow',name:'Dow Jones',symbol:'DJIA',icon:'🏛️',category:'indices'},
+        '^IXIC':{id:'nasdaq',name:'NASDAQ',symbol:'NDX',icon:'💻',category:'indices'},
+        '^N225':{id:'nikkei',name:'Nikkei 225',symbol:'N225',icon:'🇯🇵',category:'indices'},
+        '^FTSE':{id:'ftse',name:'FTSE 100',symbol:'FTSE',icon:'🇬🇧',category:'indices'},
+        '^GDAXI':{id:'dax',name:'DAX 40',symbol:'DAX',icon:'🇩🇪',category:'indices'},
+        '^HSI':{id:'hsi',name:'Hang Seng',symbol:'HSI',icon:'🇭🇰',category:'indices'},
+        '^MXX':{id:'ipc',name:'IPC México',symbol:'IPC',icon:'🇲🇽',category:'indices'},
+        '^VIX':{id:'vix',name:'VIX (Miedo)',symbol:'VIX',icon:'😱',category:'indices'},
+        '^BVSP':{id:'bovespa',name:'Bovespa',symbol:'BVSP',icon:'🇧🇷',category:'indices'}};
+      const res=await yahooQuote(Object.keys(IMAP));
+      res.forEach(r=>{const m=IMAP[r.symbol];if(!m||r.regularMarketPrice==null)return;out[m.id]={...m,price:r.regularMarketPrice,change:r.regularMarketChangePercent??0};});
+      st.indices=res.length?'ok':'warn';
+    }catch(e){st.indices='warn';}
+
+    /* 6. AGRO — Yahoo Finance batch */
+    try{
+      const AMAP={'ZW=F':{id:'wheat',name:'Trigo',symbol:'ZW',icon:'🌾',category:'agro'},
+        'ZC=F':{id:'corn',name:'Maíz',symbol:'ZC',icon:'🌽',category:'agro'},
+        'ZS=F':{id:'soy',name:'Soya',symbol:'ZS',icon:'🫘',category:'agro'},
+        'KC=F':{id:'coffee',name:'Café',symbol:'KC',icon:'☕',category:'agro'},
+        'SB=F':{id:'sugar',name:'Azúcar',symbol:'SB',icon:'🍬',category:'agro'},
+        'CC=F':{id:'cocoa',name:'Cacao',symbol:'CC',icon:'🍫',category:'agro'},
+        'CT=F':{id:'cotton',name:'Algodón',symbol:'CT',icon:'🌿',category:'agro'},
+        'OJ=F':{id:'oj',name:'Jugo Naranja',symbol:'OJ',icon:'🍊',category:'agro'}};
+      const res=await yahooQuote(Object.keys(AMAP));
+      res.forEach(r=>{const m=AMAP[r.symbol];if(!m||r.regularMarketPrice==null)return;out[m.id]={...m,price:r.regularMarketPrice,change:r.regularMarketChangePercent??0};});
+      st.agro=res.length?'ok':'warn';
+    }catch(e){st.agro='warn';}
+
+    setApiStatus(st);
+    if(Object.keys(out).length>0){
+      setData(prev=>({...prev,...out}));
+      setLastUpdate(new Date());
+      setLoading(false);
+    }
+  };
+
+  useEffect(()=>{fetch_();const t=setInterval(fetch_,22000);return()=>clearInterval(t);},[]);
+  return{data,loading,lastUpdate,apiStatus};
+};
+
+/* ── Voice ── */
+const useVoice=()=>{
+  const [on,setOn]=useState(false);
+  const synth=useRef(window.speechSynthesis);
+  const voice=useRef(null);
+  useEffect(()=>{
+    const load=()=>{
+      const vv=synth.current.getVoices();
+      voice.current=vv.find(v=>v.lang.startsWith('es')&&v.name.toLowerCase().includes('google'))
+        ??vv.find(v=>v.lang.startsWith('es'))??vv[0];
+    };
+    load(); synth.current.onvoiceschanged=load;
+  },[]);
+  const speak=useCallback((txt,hi=false)=>{
+    if(!on)return;
+    if(hi)synth.current.cancel();
+    const u=new SpeechSynthesisUtterance(txt);
+    if(voice.current)u.voice=voice.current;
+    u.lang='es-ES';u.rate=.9;u.volume=.85;
+    synth.current.speak(u);
+  },[on]);
+  const toggle=useCallback(()=>{if(on)synth.current.cancel();setOn(v=>!v);},[on]);
+  return{on,toggle,speak};
+};
+
+/* ── Audio ── */
+const useAudio=()=>{
+  const ctx=useRef(null);
+  useEffect(()=>{ctx.current=new(window.AudioContext||window.webkitAudioContext)();},[]);
+  const tone=(hz,dur,vol=.07)=>{
+    if(!ctx.current)return;
+    try{
+      const o=ctx.current.createOscillator(),g=ctx.current.createGain();
+      o.connect(g);g.connect(ctx.current.destination);
+      o.frequency.value=hz;o.type='sine';
+      g.gain.setValueAtTime(vol,ctx.current.currentTime);
+      g.gain.exponentialRampToValueAtTime(.001,ctx.current.currentTime+dur);
+      o.start();o.stop(ctx.current.currentTime+dur);
+    }catch(_){}
+  };
+  return{
+    click:()=>{tone(900,.08,.12);setTimeout(()=>tone(1200,.06,.08),22);},
+    hover:()=>tone(650,.04,.04),
+    success:()=>{tone(523,.12,.14);setTimeout(()=>tone(659,.12,.14),85);setTimeout(()=>tone(784,.18,.14),170);},
+  };
+};
+
+/* ── Mini Chart ── */
+const MiniChart=React.memo(({id,price,up,w=88,h=26})=>{
+  const ref=useRef(null);
+  useEffect(()=>{
+    const canvas=ref.current;if(!canvas)return;
+    const dpr=window.devicePixelRatio||1;
+    canvas.width=w*dpr;canvas.height=h*dpr;
+    const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);ctx.clearRect(0,0,w,h);
+    const hist=getHistory(id,price);
+    const vals=hist.map(d=>d.close);
+    const mn=Math.min(...vals),mx=Math.max(...vals),rng=mx-mn||1;
+    const col=up?'#22d3a5':'#f43f5e';
+    const grd=ctx.createLinearGradient(0,0,0,h);
+    grd.addColorStop(0,col+'28');grd.addColorStop(1,col+'04');
+    ctx.beginPath();ctx.moveTo(0,h);
+    vals.forEach((v,i)=>ctx.lineTo((i/(vals.length-1))*w,h-((v-mn)/rng)*(h-2.5)-1.5));
+    ctx.lineTo(w,h);ctx.closePath();ctx.fillStyle=grd;ctx.fill();
+    ctx.beginPath();
+    vals.forEach((v,i)=>{const x=(i/(vals.length-1))*w,y=h-((v-mn)/rng)*(h-2.5)-1.5;i?ctx.lineTo(x,y):ctx.moveTo(x,y);});
+    ctx.strokeStyle=col;ctx.lineWidth=1.5;ctx.stroke();
+  },[id,price,up,w,h]);
+  return <canvas ref={ref} style={{width:w,height:h,display:'block'}}/>;
+});
+
+/* ── Large Chart ── */
+const LargeChart=React.memo(({asset,price,w,h,snd})=>{
+  const ref=useRef(null);
+  const [hov,setHov]=useState(null);
+  const [ttPos,setTtPos]=useState({x:0,y:0});
+  const hist=useMemo(()=>getHistory(asset.id,price,price>100?.016:.011,100),
+    // eslint-disable-next-line
+    [asset.id,Math.round(price*100)/100]);
+
+  useEffect(()=>{
+    const canvas=ref.current;if(!canvas||hist.length<2)return;
+    const dpr=window.devicePixelRatio||1;
+    canvas.width=w*dpr;canvas.height=h*dpr;
+    const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);ctx.clearRect(0,0,w,h);
+    const pad={top:42,right:74,bottom:50,left:6};
+    const cw=w-pad.left-pad.right,ch=h-pad.top-pad.bottom;
+    const highs=hist.map(d=>d.high),lows=hist.map(d=>d.low);
+    const mn=Math.min(...lows)*.9983,mx=Math.max(...highs)*1.0017,rng=mx-mn||1;
+    const toY=v=>pad.top+ch-((v-mn)/rng)*ch;
+    const toX=i=>pad.left+(i/(hist.length-1))*cw;
+    const cw_=Math.max(3,(cw/hist.length)*.66);
+    ctx.fillStyle='#05080f';ctx.fillRect(0,0,w,h);
+    ctx.strokeStyle='#151d30';ctx.lineWidth=.5;
+    for(let i=0;i<=6;i++){
+      const y=pad.top+(i/6)*ch;
+      ctx.beginPath();ctx.moveTo(pad.left,y);ctx.lineTo(w-pad.right,y);ctx.stroke();
+      const pv=mx-(i/6)*rng;
+      ctx.fillStyle='#3a4f6a';ctx.font='10px JetBrains Mono';ctx.textAlign='left';
+      ctx.fillText(pv>100?pv.toFixed(2):pv.toFixed(4),w-pad.right+6,y+3.5);
+    }
+    const mxV=Math.max(...hist.map(d=>d.volume));
+    hist.forEach((d,i)=>{
+      const x=toX(i),vh=((d.volume/mxV)*26);
+      ctx.fillStyle=d.close>=d.open?'rgba(34,211,165,.16)':'rgba(244,63,94,.16)';
+      ctx.fillRect(x-cw_/2,h-pad.bottom-vh,cw_,vh);
+    });
+    hist.forEach((d,i)=>{
+      const x=toX(i),yO=toY(d.open),yC=toY(d.close),yH=toY(d.high),yL=toY(d.low);
+      const col=d.close>=d.open?'#22d3a5':'#f43f5e';
+      ctx.strokeStyle=col;ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(x,yH);ctx.lineTo(x,yL);ctx.stroke();
+      ctx.fillStyle=col;
+      ctx.fillRect(x-cw_/2,Math.min(yO,yC),cw_,Math.max(1.5,Math.abs(yC-yO)));
+    });
+    const last=hist[hist.length-1].close,lastY=toY(last);
+    ctx.setLineDash([4,4]);ctx.strokeStyle='#3b82f6';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(pad.left,lastY);ctx.lineTo(w-pad.right,lastY);ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='#3b82f6';
+    ctx.beginPath();ctx.roundRect(w-pad.right,lastY-11,68,22,4);ctx.fill();
+    ctx.fillStyle='#fff';ctx.font='bold 10px JetBrains Mono';ctx.textAlign='center';
+    ctx.fillText(last>100?last.toFixed(2):last.toFixed(4),w-pad.right+34,lastY+3.5);
+    ctx.fillStyle='#748098';ctx.font='bold 12px Syne';ctx.textAlign='left';
+    ctx.fillText(`${asset.symbol} — 100 velas 1min`,pad.left+12,26);
+    if(hov!==null&&hist[hov]){
+      const hx=toX(hov),hy=toY(hist[hov].close);
+      ctx.setLineDash([3,3]);ctx.strokeStyle='#2a3d5a';ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(hx,pad.top);ctx.lineTo(hx,h-pad.bottom);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(pad.left,hy);ctx.lineTo(w-pad.right,hy);ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.beginPath();ctx.arc(hx,hy,5,0,Math.PI*2);
+      ctx.fillStyle='#6366f1';ctx.fill();
+    }
+  },[hist,w,h,asset,hov]);
+
+  const onMove=e=>{
+    const rect=ref.current?.getBoundingClientRect();if(!rect)return;
+    const x=e.clientX-rect.left,cw=w-6-74;
+    const idx=Math.round(((x-6)/cw)*(hist.length-1));
+    if(idx>=0&&idx<hist.length){setHov(idx);setTtPos({x:e.clientX-rect.left,y:e.clientY-rect.top});}
+  };
+  const hd=hov!==null?hist[hov]:null;
+  return(
+    <div style={{position:'relative',lineHeight:0}}>
+      <canvas ref={ref} style={{width:w,height:h,cursor:'crosshair',borderRadius:12,display:'block'}}
+        onMouseMove={onMove} onMouseLeave={()=>setHov(null)} onMouseEnter={snd.hover}/>
+      {hd&&(
+        <div className="ctt" style={{left:Math.min(ttPos.x+12,w-170),top:Math.max(ttPos.y-62,6)}}>
+          <div style={{color:'var(--tx2)',marginBottom:6,fontSize:10}}>{new Date(hd.time).toLocaleTimeString()}</div>
+          {[['O',hd.open,hd.close>=hd.open?'var(--green)':'var(--red)'],
+            ['H',hd.high,'var(--green)'],['L',hd.low,'var(--red)'],
+            ['C',hd.close,hd.close>=hd.open?'var(--green)':'var(--red)']].map(([lb,v,col])=>(
+            <div key={lb} style={{display:'flex',justifyContent:'space-between',gap:18,marginBottom:3}}>
+              <span style={{color:'var(--tx2)'}}>{lb}</span>
+              <span style={{color:col,fontWeight:700}}>{v>100?v.toFixed(2):v.toFixed(4)}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+});
+
+/* ── News Ticker ── */
+const NewsTicker=({news,newsStatus,onSpeak,snd})=>{
+  if(!news.length)return null;
+  const items=[...news,...news];
+  return(
     <div className="ticker-wrap">
-        <div className="ticker-label">🔴 LIVE</div>
-        <div className="ticker-fade-left" />
-        <div style={{ overflow: 'hidden', flex: 1 }}>
-            <div className="ticker-track" style={{ animation: 'ticker-scroll 70s linear infinite' }}>
-                {[...NEWS, ...NEWS].map((n, i) => (
-                    <div key={i} className={`ticker-item ${n.cls}`}
-                        onClick={() => { sound.click(); onSpeak(n.speech); }}
-                        onMouseEnter={sound.hover}>
-                        <span>{n.text}</span>
-                        <span className={`ticker-tag ${n.cls}`}>{n.tag}</span>
-                    </div>
-                ))}
+      <div className="ticker-lbl">{newsStatus==='live'?'🔴 LIVE NEWS':'📰 NOTICIAS'}</div>
+      <div className="ticker-fade"/>
+      <div style={{overflow:'hidden',flex:1}}>
+        <div className="ticker-track" style={{animation:`tick-run ${Math.max(60,news.length*8)}s linear infinite`}}>
+          {items.map((n,i)=>(
+            <div key={i} className={`tick-item ${n.cls}`}
+              onClick={()=>{snd.click();onSpeak(n.speech||n.title,true);}}
+              onMouseEnter={snd.hover}>
+              <span style={{maxWidth:420,overflow:'hidden',textOverflow:'ellipsis'}}>{n.title}</span>
+              <span className={`tick-tag ${n.cls}`}>{n.tag||n.source}</span>
             </div>
+          ))}
         </div>
+      </div>
     </div>
-);
-
-/* ════════════════════════════════════════════════════
-   MARKET TABLE
-════════════════════════════════════════════════════ */
-const MarketTable = ({ assets, marketData, selected, onSelect, onAnalyze, sound }) => {
-    const [flashes, setFlashes] = useState({});
-    const prevRef = useRef({});
-
-    useEffect(() => {
-        const next = {};
-        assets.forEach(a => {
-            const cur = marketData[a.id]?.price;
-            const prv = prevRef.current[a.id];
-            if (cur != null && prv != null && cur !== prv)
-                next[a.id] = cur > prv ? 'up' : 'down';
-            if (cur != null) prevRef.current[a.id] = cur;
-        });
-        if (Object.keys(next).length > 0) {
-            setFlashes(next);
-            setTimeout(() => setFlashes({}), 560);
-        }
-    }, [assets, marketData]);
-
-    if (!assets.length) return (
-        <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>
-            Cargando activos…
-        </div>
-    );
-
-    return (
-        <div className="market-table">
-            <div className="table-head">
-                <span>Activo</span>
-                <span style={{ textAlign: 'right' }}>Precio</span>
-                <span style={{ textAlign: 'right' }}>24h %</span>
-                <span style={{ textAlign: 'center' }}>Tendencia</span>
-                <span style={{ textAlign: 'center' }}>Análisis IA</span>
-            </div>
-            {assets.map(a => {
-                const d = marketData[a.id];
-                if (!d) return null;
-                const up    = (d.change ?? 0) >= 0;
-                const flash = flashes[a.id];
-
-                return (
-                    <div key={a.id}
-                        className={`table-row${selected === a.id ? ' selected' : ''} ${flash === 'up' ? 'flash-up' : flash === 'down' ? 'flash-down' : ''}`}
-                        onClick={() => { sound.click(); onSelect(a.id); }}
-                        onMouseEnter={sound.hover}>
-                        {/* Asset name */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                            <span style={{ fontSize: 22 }}>{d.icon}</span>
-                            <div>
-                                <div style={{ fontWeight: 800, fontSize: 14 }}>{d.symbol}</div>
-                                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{d.name}</div>
-                            </div>
-                        </div>
-                        {/* Price */}
-                        <div style={{ textAlign: 'right', fontFamily: 'JetBrains Mono', fontWeight: 700, fontSize: 14 }}>
-                            {fmtPrice(d.price)}
-                        </div>
-                        {/* Change */}
-                        <div style={{ textAlign: 'right', fontFamily: 'JetBrains Mono', fontWeight: 700,
-                            color: up ? 'var(--green)' : 'var(--red)', fontSize: 13 }}>
-                            {up ? '▲ +' : '▼ '}{Math.abs(d.change ?? 0).toFixed(2)}%
-                        </div>
-                        {/* Mini chart */}
-                        <div style={{ display: 'flex', justifyContent: 'center' }}>
-                            <MiniChart assetId={a.id} price={d.price} positive={up} />
-                        </div>
-                        {/* Analyze */}
-                        <div style={{ display: 'flex', justifyContent: 'center' }}>
-                            <button className="analyze-btn"
-                                onClick={e => { e.stopPropagation(); sound.click(); onAnalyze(d); }}
-                                onMouseEnter={sound.hover}>
-                                🎤 Analizar
-                            </button>
-                        </div>
-                    </div>
-                );
-            })}
-        </div>
-    );
+  );
 };
 
-/* ════════════════════════════════════════════════════
-   API STATUS BAR
-════════════════════════════════════════════════════ */
-const ApiBar = ({ status }) => (
-    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
-        {[
-            ['CoinGecko',      status.crypto, 'Crypto'],
-            ['ExchangeRate',   status.forex,  'Forex'],
-            ['metals.live',    status.metals, 'Metales'],
-            ['Yahoo Finance',  status.energy, 'Energía'],
-        ].map(([src, st, lbl]) => (
-            <div key={lbl} className="api-status">
-                <div className={`api-dot ${st}`} />
-                <span>{src}</span>
-                <span style={{ color: 'var(--text-dim)' }}>·</span>
-                <span style={{ color: st === 'ok' ? 'var(--green)' : st === 'warn' ? 'var(--amber)' : 'var(--red)' }}>
-                    {st === 'ok' ? 'OK' : st === 'warn' ? 'simulado' : 'error'}
-                </span>
-            </div>
-        ))}
+/* ── Fear & Greed Badge ── */
+const FGBadge=({fg})=>{
+  if(!fg)return null;
+  const v=parseInt(fg.value);
+  const col=v<25?'#f43f5e':v<45?'#f97316':v<55?'#f59e0b':v<75?'#84cc16':'#22d3a5';
+  return(
+    <div className="fg-box" style={{borderColor:`${col}44`,background:`${col}12`,color:col}}>
+      <span style={{fontSize:15}}>{v<25?'😱':v<45?'😟':v<55?'😐':v<75?'🙂':'🤑'}</span>
+      <div>
+        <div style={{fontSize:8,opacity:.7}}>FEAR &amp; GREED</div>
+        <div>{v} · {fg.value_classification}</div>
+      </div>
     </div>
+  );
+};
+
+/* ── Stats Bar ── */
+const StatsBar=({global,fearGreed})=>{
+  if(!global&&!fearGreed)return null;
+  const mc=global?.total_market_cap?.usd,vol=global?.total_volume?.usd;
+  const btcd=global?.market_cap_percentage?.btc,ethd=global?.market_cap_percentage?.eth;
+  const fmt_=n=>n>=1e12?`$${(n/1e12).toFixed(2)}T`:n>=1e9?`$${(n/1e9).toFixed(1)}B`:'—';
+  return(
+    <div className="stats-bar">
+      {mc&&<div className="stat-pill"><span className="lbl">MCAP CRYPTO</span><span className="val">{fmt_(mc)}</span></div>}
+      {vol&&<div className="stat-pill"><span className="lbl">VOL 24H</span><span className="val">{fmt_(vol)}</span></div>}
+      {btcd&&<div className="stat-pill"><span className="lbl">BTC DOM.</span><span className="val">{btcd.toFixed(1)}%</span></div>}
+      {ethd&&<div className="stat-pill"><span className="lbl">ETH DOM.</span><span className="val">{ethd.toFixed(1)}%</span></div>}
+      {global?.active_cryptocurrencies&&<div className="stat-pill"><span className="lbl">CRYPTOS ACTIVAS</span><span className="val">{global.active_cryptocurrencies.toLocaleString()}</span></div>}
+      {fearGreed&&<FGBadge fg={fearGreed}/>}
+    </div>
+  );
+};
+
+/* ── API Status Pills ── */
+const ApiStatus=({st,newsStatus})=>(
+  <div style={{display:'flex',gap:6,flexWrap:'wrap',marginBottom:14}}>
+    {[['CoinGecko',st.crypto,'Crypto'],['ExchangeRate-API',st.forex,'Forex'],
+      ['metals.live',st.metals,'Metales'],['Yahoo Finance',st.energy,'Energía'],
+      ['Yahoo Finance',st.indices,'Índices'],['Yahoo Finance',st.agro,'Agrícola'],
+      ['RSS/rss2json',newsStatus==='live'?'ok':'warn','Noticias']
+    ].map(([src,s,lbl])=>(
+      <div key={lbl} className="api-pill">
+        <div className="api-dot" style={{background:s==='ok'?'var(--green)':s==='warn'?'var(--amber)':'var(--red)'}}/>
+        <span>{src} · {lbl} · </span>
+        <span style={{color:s==='ok'?'var(--green)':s==='warn'?'var(--amber)':'var(--red)'}}>
+          {s==='ok'?'LIVE':s==='warn'?'sim.':'error'}
+        </span>
+      </div>
+    ))}
+  </div>
 );
 
-/* ════════════════════════════════════════════════════
-   APP
-════════════════════════════════════════════════════ */
-const TABS = [
-    { id: 'crypto',  label: '₿ Crypto',  icon: '₿' },
-    { id: 'forex',   label: '💱 Forex',   icon: '💱' },
-    { id: 'metales', label: '🥇 Metales', icon: '🥇' },
-    { id: 'energia', label: '⚡ Energía', icon: '⚡' },
+/* ── Market Table ── */
+const MarketTable=({assets,data,sel,onSel,onAnalyze,snd})=>{
+  const [flashes,setFlashes]=useState({});
+  const prev=useRef({});
+  useEffect(()=>{
+    const nxt={};
+    assets.forEach(a=>{
+      const cur=data[a.id]?.price,prv=prev.current[a.id];
+      if(cur!=null&&prv!=null&&cur!==prv)nxt[a.id]=cur>prv?'up':'down';
+      if(cur!=null)prev.current[a.id]=cur;
+    });
+    if(Object.keys(nxt).length){setFlashes(nxt);setTimeout(()=>setFlashes({}),560);}
+  },[assets,data]);
+
+  if(!assets.length)return(
+    <div style={{textAlign:'center',padding:40,color:'var(--tx2)',background:'var(--bg2)',borderRadius:12,border:'1px solid var(--b0)'}}>
+      <div className="spinner" style={{margin:'0 auto 12px'}}/>
+      <div>Cargando activos...</div>
+    </div>
+  );
+
+  return(
+    <div className="tbl">
+      <div className="tbl-head">
+        <span>Activo</span><span style={{textAlign:'right'}}>Precio</span>
+        <span style={{textAlign:'right'}}>24h %</span>
+        <span style={{textAlign:'center'}}>Tendencia</span>
+        <span style={{textAlign:'center'}}>Análisis IA</span>
+      </div>
+      {assets.map(a=>{
+        const d=data[a.id];if(!d)return null;
+        const up=(d.change??0)>=0,fl=flashes[a.id];
+        return(
+          <div key={a.id}
+            className={`tbl-row${sel===a.id?' sel':''} ${fl==='up'?'flash-up':fl==='down'?'flash-down':''}`}
+            onClick={()=>{snd.click();onSel(a.id);}}
+            onMouseEnter={snd.hover}>
+            <div style={{display:'flex',alignItems:'center',gap:11}}>
+              <span style={{fontSize:20}}>{d.icon}</span>
+              <div>
+                <div style={{fontWeight:800,fontSize:13}}>{d.symbol}</div>
+                <div style={{fontSize:10,color:'var(--tx2)'}}>{d.name}</div>
+              </div>
+            </div>
+            <div style={{textAlign:'right',fontFamily:'JetBrains Mono',fontWeight:700,fontSize:13}}>{fmtPrice(d.price)}</div>
+            <div style={{textAlign:'right',fontFamily:'JetBrains Mono',fontWeight:700,fontSize:12,color:up?'var(--green)':'var(--red)'}}>
+              {up?'▲ +':'▼ '}{Math.abs(d.change??0).toFixed(2)}%
+            </div>
+            <div style={{display:'flex',justifyContent:'center'}}>
+              <MiniChart id={a.id} price={d.price} up={up}/>
+            </div>
+            <div style={{display:'flex',justifyContent:'center'}}>
+              <button className="ana-btn"
+                onClick={e=>{e.stopPropagation();snd.click();onAnalyze(d);}}
+                onMouseEnter={snd.hover}>🎤 Analizar</button>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+/* ── APP ── */
+const TABS=[
+  {id:'crypto',label:'₿ Crypto'},{id:'forex',label:'💱 Forex'},
+  {id:'metales',label:'🥇 Metales'},{id:'energia',label:'⚡ Energía'},
+  {id:'indices',label:'📈 Índices'},{id:'agro',label:'🌾 Agrícola'},
 ];
 
-function App() {
-    const { data, loading, lastUpdate, apiStatus } = useMarketData();
-    const voice  = useVoice();
-    const sound  = useAudio();
-    const wrap   = useRef(null);
+function App(){
+  const{data,loading,lastUpdate,apiStatus}=useMarketData();
+  const{news,status:newsStatus}=useNews();
+  const fearGreed=useFearGreed();
+  const globalData=useCryptoGlobal();
+  const voice=useVoice();
+  const snd=useAudio();
+  const wrapRef=useRef(null);
+  const[tab,setTab]=useState('crypto');
+  const[sel,setSel]=useState('btc');
+  const[cw,setCw]=useState(900);
+  const[ch,setCh]=useState(460);
 
-    const [tab,      setTab]      = useState('crypto');
-    const [selected, setSelected] = useState('btc');
-    const [chartW,   setChartW]   = useState(900);
-    const [chartH,   setChartH]   = useState(480);
-
-    /* Responsive chart size */
-    useEffect(() => {
-        const update = () => {
-            if (!wrap.current) return;
-            setChartW(Math.min(wrap.current.offsetWidth - 2, 1300));
-            setChartH(window.innerWidth < 700 ? 320 : 460);
-        };
-        update();
-        window.addEventListener('resize', update);
-        return () => window.removeEventListener('resize', update);
-    }, []);
-
-    /* When switching tab, auto-select first asset of that tab */
-    const tabAssets = useMemo(
-        () => Object.values(data).filter(a => a?.category === tab),
-        [data, tab]
-    );
-
-    useEffect(() => {
-        if (tabAssets.length > 0 && !tabAssets.find(a => a.id === selected)) {
-            setSelected(tabAssets[0].id);
-        }
-    }, [tab, tabAssets]);
-
-    const selectedAsset = data[selected];
-
-    const handleAnalyze = (d) => {
-        const up  = (d.change ?? 0) >= 0;
-        const txt = `Analizando ${d.name}. Precio actual: ${fmtPrice(d.price)}. Variación en 24 horas: ${up ? 'positivo' : 'negativo'} del ${Math.abs(d.change ?? 0).toFixed(2)} por ciento. Tendencia ${up ? 'alcista con momentum positivo' : 'bajista, espera confirmación de soporte'}.`;
-        voice.speak(txt, true);
-        sound.success();
+  useEffect(()=>{
+    const upd=()=>{
+      if(!wrapRef.current)return;
+      setCw(Math.min(wrapRef.current.offsetWidth-2,1300));
+      setCh(window.innerWidth<700?300:460);
     };
+    upd();window.addEventListener('resize',upd);return()=>window.removeEventListener('resize',upd);
+  },[]);
 
-    return (
-        <div style={{ minHeight: '100vh' }}>
-            {/* ── Header ── */}
-            <header className="header">
-                <div className="logo">
-                    <div className="logo-badge">T</div>
-                    <div className="logo-text">
-                        <h1>TradeView <span>Pro AI</span></h1>
-                        <p>4 APIs reales · velas japonesas · análisis IA</p>
-                    </div>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-                    <div className="live-badge">
-                        <div className="live-dot" />
-                        {lastUpdate ? lastUpdate.toLocaleTimeString() : '-- : -- : --'}
-                    </div>
-                    <button className={`voice-btn${voice.enabled ? ' active' : ''}`}
-                        onClick={() => { sound.click(); voice.toggle(); }}
-                        onMouseEnter={sound.hover}>
-                        {voice.enabled ? '🔊' : '🔇'}
-                        <span>{voice.enabled ? 'Voz ON' : 'Voz OFF'}</span>
-                    </button>
-                </div>
-            </header>
+  const tabAssets=useMemo(()=>Object.values(data).filter(a=>a?.category===tab),[data,tab]);
 
-            {/* ── Ticker ── */}
-            <NewsTicker onSpeak={t => voice.speak(t, true)} sound={sound} />
+  useEffect(()=>{
+    if(tabAssets.length&&!tabAssets.find(a=>a.id===sel))setSel(tabAssets[0].id);
+  },[tab,tabAssets]);
 
-            {/* ── Main ── */}
-            <div ref={wrap} style={{ maxWidth: 1400, margin: '0 auto', padding: '20px 16px' }}>
-                {loading ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, padding: 80 }}>
-                        <div className="spinner" />
-                        <span style={{ color: 'var(--text-muted)', fontSize: 14 }}>Conectando con APIs de mercado…</span>
-                    </div>
-                ) : (
-                    <>
-                        {/* ── Chart ── */}
-                        {selectedAsset && (
-                            <div className="slide-in" style={{ marginBottom: 20 }}>
-                                <LargeChart asset={selectedAsset} price={selectedAsset.price}
-                                    w={chartW} h={chartH} sound={sound} />
+  const selAsset=data[sel];
 
-                                {/* Price bar */}
-                                <div className="price-bar" style={{ marginTop: 12 }}>
-                                    <div>
-                                        <div className="price-label">PRECIO ACTUAL</div>
-                                        <div className="price-main">{fmtPrice(selectedAsset.price)}</div>
-                                    </div>
-                                    <div>
-                                        <div className="price-label">VARIACIÓN 24H</div>
-                                        <div className="price-change" style={{ color: (selectedAsset.change ?? 0) >= 0 ? 'var(--green)' : 'var(--red)' }}>
-                                            {(selectedAsset.change ?? 0) >= 0 ? '▲ +' : '▼ '}{Math.abs(selectedAsset.change ?? 0).toFixed(2)}%
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div className="price-label">ACTIVO</div>
-                                        <div style={{ fontSize: 20, fontWeight: 800 }}>{selectedAsset.icon} {selectedAsset.name}</div>
-                                    </div>
-                                    <div>
-                                        <div className="price-label">ÚLTIMA ACTUALIZACIÓN</div>
-                                        <div style={{ fontFamily: 'JetBrains Mono', fontSize: 14, color: 'var(--text-muted)' }}>
-                                            {lastUpdate?.toLocaleTimeString() ?? '--:--:--'}
-                                        </div>
-                                    </div>
-                                    <button className="analyze-btn" style={{ padding: '10px 20px', fontSize: 13 }}
-                                        onClick={() => { sound.click(); handleAnalyze(selectedAsset); }}
-                                        onMouseEnter={sound.hover}>
-                                        🎤 Analizar con IA
-                                    </button>
-                                </div>
-                            </div>
-                        )}
+  const handleAnalyze=d=>{
+    const up=(d.change??0)>=0;
+    const cat={crypto:'criptomoneda',forex:'par de divisas',metales:'metal precioso',energia:'commodity energético',indices:'índice bursátil',agro:'materia prima agrícola'};
+    const txt=`${d.name}, ${cat[d.category]||'activo'}. Precio actual: ${fmtPrice(d.price)}. Variación en 24 horas: ${up?'positiva':'negativa'} del ${Math.abs(d.change??0).toFixed(2)} por ciento. Tendencia ${up?'alcista, momentum positivo, busca niveles de entrada':'bajista, espera confirmación de soporte antes de entrar'}.`;
+    voice.speak(txt,true);snd.success();
+  };
 
-                        {/* ── API Status ── */}
-                        <ApiBar status={apiStatus} />
-
-                        {/* ── Tabs ── */}
-                        <div className="tab-bar" style={{ marginBottom: 16 }}>
-                            {TABS.map(t => (
-                                <button key={t.id}
-                                    className={`tab-btn${tab === t.id ? ' active' : ''}`}
-                                    onClick={() => { sound.click(); setTab(t.id); }}
-                                    onMouseEnter={sound.hover}>
-                                    {t.label} ({Object.values(data).filter(a => a?.category === t.id).length})
-                                </button>
-                            ))}
-                        </div>
-
-                        {/* ── Table ── */}
-                        <MarketTable
-                            assets={tabAssets}
-                            marketData={data}
-                            selected={selected}
-                            onSelect={setSelected}
-                            onAnalyze={handleAnalyze}
-                            sound={sound}
-                        />
-
-                        {/* ── Footer ── */}
-                        <div style={{ textAlign: 'center', marginTop: 40, padding: '24px 0', borderTop: '1px solid var(--border)',
-                            fontSize: 11, color: 'var(--text-muted)', fontFamily: 'JetBrains Mono', lineHeight: 2 }}>
-                            <div>CoinGecko · ExchangeRate-API · metals.live · Yahoo Finance (proxy CORS)</div>
-                            <div>Actualización cada 20 seg · Gráficas de velas · Análisis de voz IA</div>
-                        </div>
-                    </>
-                )}
-            </div>
+  return(
+    <div style={{minHeight:'100vh'}}>
+      <header className="hdr">
+        <div className="logo">
+          <div className="logo-badge">T</div>
+          <div>
+            <h1>TradeView <span>Pro AI</span></h1>
+            <p>6 APIs reales · velas japonesas · análisis de voz · noticias live</p>
+          </div>
         </div>
-    );
+        <div style={{display:'flex',alignItems:'center',gap:10,flexWrap:'wrap'}}>
+          <div className="live-badge">
+            <div className="live-dot"/>
+            {lastUpdate?lastUpdate.toLocaleTimeString():'-- : -- : --'}
+          </div>
+          <button className={`vbtn${voice.on?' on':''}`}
+            onClick={()=>{snd.click();voice.toggle();}} onMouseEnter={snd.hover}>
+            {voice.on?'🔊':'🔇'} {voice.on?'Voz ON':'Voz OFF'}
+          </button>
+        </div>
+      </header>
+
+      <StatsBar global={globalData} fearGreed={fearGreed}/>
+      <NewsTicker news={news} newsStatus={newsStatus} onSpeak={(t,hi)=>voice.speak(t,hi)} snd={snd}/>
+
+      <div ref={wrapRef} style={{maxWidth:1400,margin:'0 auto',padding:'18px 14px'}}>
+        {loading?(
+          <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:14,padding:80}}>
+            <div className="spinner"/>
+            <span style={{color:'var(--tx2)',fontSize:13}}>Conectando con 6 APIs de mercado…</span>
+          </div>
+        ):(
+          <>
+            {selAsset&&(
+              <div className="fadein" style={{marginBottom:16}}>
+                <LargeChart asset={selAsset} price={selAsset.price} w={cw} h={ch} snd={snd}/>
+                <div className="price-bar" style={{marginTop:10}}>
+                  <div>
+                    <div className="price-lbl">PRECIO ACTUAL</div>
+                    <div className="price-main">{fmtPrice(selAsset.price)}</div>
+                  </div>
+                  <div>
+                    <div className="price-lbl">VARIACIÓN 24H</div>
+                    <div className="price-chg" style={{color:(selAsset.change??0)>=0?'var(--green)':'var(--red)'}}>
+                      {(selAsset.change??0)>=0?'▲ +':'▼ '}{Math.abs(selAsset.change??0).toFixed(2)}%
+                    </div>
+                  </div>
+                  <div>
+                    <div className="price-lbl">ACTIVO</div>
+                    <div style={{fontSize:18,fontWeight:800}}>{selAsset.icon} {selAsset.name}</div>
+                  </div>
+                  <div>
+                    <div className="price-lbl">CATEGORÍA</div>
+                    <div style={{fontSize:12,color:'var(--tx2)',fontWeight:600,textTransform:'uppercase',letterSpacing:.5}}>
+                      {selAsset.category}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="price-lbl">ACTUALIZADO</div>
+                    <div style={{fontFamily:'JetBrains Mono',fontSize:13,color:'var(--tx2)'}}>{lastUpdate?.toLocaleTimeString()??'--:--:--'}</div>
+                  </div>
+                  <button className="ana-btn" style={{padding:'10px 18px',fontSize:13}}
+                    onClick={()=>{snd.click();handleAnalyze(selAsset);}} onMouseEnter={snd.hover}>
+                    🎤 Analizar con IA
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <ApiStatus st={apiStatus} newsStatus={newsStatus}/>
+
+            <div className="tab-bar" style={{marginBottom:14}}>
+              {TABS.map(t=>{
+                const cnt=Object.values(data).filter(a=>a?.category===t.id).length;
+                return(
+                  <button key={t.id} className={`tab-btn${tab===t.id?' active':''}`}
+                    onClick={()=>{snd.click();setTab(t.id);}} onMouseEnter={snd.hover}>
+                    {t.label}{cnt>0?` (${cnt})`:''}
+                  </button>
+                );
+              })}
+            </div>
+
+            <MarketTable assets={tabAssets} data={data} sel={sel}
+              onSel={setSel} onAnalyze={handleAnalyze} snd={snd}/>
+
+            <div style={{textAlign:'center',marginTop:36,padding:'20px 0',borderTop:'1px solid var(--b0)',fontSize:10,color:'var(--tx2)',fontFamily:'JetBrains Mono',lineHeight:2.2}}>
+              <div><strong style={{color:'var(--tx)'}}>6 APIs gratuitas sin API key:</strong>{' '}
+                CoinGecko · ExchangeRate-API · metals.live · Yahoo Finance/corsproxy.io · alternative.me · rss2json+Reuters
+              </div>
+              <div>Precios cada 22 seg · Noticias cada 5 min · Fear &amp; Greed cada hora</div>
+              <div style={{color:'var(--tx3)',marginTop:4}}>⚠ Solo para estudio y análisis. No es asesoría de inversión.</div>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(<App />);
