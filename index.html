@@ -40,6 +40,10 @@
             0% { transform: translateX(0); }
             100% { transform: translateX(-50%); }
         }
+        @keyframes loading {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
         
         .flash-up { animation: flash-green 0.6s ease-out; }
         .flash-down { animation: flash-red 0.6s ease-out; }
@@ -58,8 +62,21 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
         }
+        .voice-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+        .voice-btn:hover::before { left: 100%; }
         .voice-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 25px rgba(102, 126, 234, 0.5);
@@ -82,12 +99,28 @@
             font-size: 11px;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+        .analyze-btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        .analyze-btn:hover::after { width: 300px; height: 300px; }
         .analyze-btn:hover {
             transform: translateY(-2px) scale(1.05);
             box-shadow: 0 8px 20px rgba(102, 126, 234, 0.5);
         }
+        .analyze-btn:active { transform: scale(0.95); }
         
         .tab-btn {
             padding: 10px 20px;
@@ -99,14 +132,34 @@
             font-size: 13px;
             font-weight: 700;
             white-space: nowrap;
-            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .tab-btn:hover { border-color: #667eea; transform: translateY(-2px); }
+        .tab-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.3s;
+            z-index: 0;
+            opacity: 0.2;
+        }
+        .tab-btn:hover::before { width: 100%; }
+        .tab-btn span { position: relative; z-index: 1; }
+        .tab-btn:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
         .tab-btn.active {
             border-color: #667eea;
             background: rgba(102, 126, 234, 0.1);
             color: #667eea;
         }
+        .tab-btn.active::before { width: 100%; opacity: 0.4; }
         
         .live-indicator {
             display: flex;
@@ -137,10 +190,6 @@
             height: 40px;
             margin: 0 auto 20px;
         }
-        @keyframes loading {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
     </style>
 </head>
 <body>
@@ -153,17 +202,16 @@
             const [isEnabled, setIsEnabled] = useState(false);
             const [currentVoice, setCurrentVoice] = useState(null);
             const synthRef = useRef(null);
-            const voicesRef = useRef([]);
 
             useEffect(() => {
                 synthRef.current = window.speechSynthesis;
                 
                 const loadVoices = () => {
-                    voicesRef.current = synthRef.current.getVoices();
-                    const femaleVoice = voicesRef.current.find(voice => 
+                    const voices = synthRef.current.getVoices();
+                    const femaleVoice = voices.find(voice => 
                         voice.lang.includes('es') && 
                         (voice.name.includes('Female') || voice.name.includes('Femenina') || voice.name.includes('Google'))
-                    ) || voicesRef.current.find(voice => voice.lang.includes('es'));
+                    ) || voices.find(voice => voice.lang.includes('es'));
                     
                     if (femaleVoice) setCurrentVoice(femaleVoice);
                 };
@@ -216,7 +264,7 @@
             };
 
             return {
-                playClick: () => { playTone(800, 0.1, 0.15); },
+                playClick: () => { playTone(800, 0.1, 0.15); setTimeout(() => playTone(1200, 0.08, 0.1), 30); },
                 playHover: () => { playTone(600, 0.05, 0.05); },
                 playSuccess: () => { 
                     playTone(523.25, 0.15, 0.2); 
@@ -234,16 +282,13 @@
         const useMarketData = () => {
             const [data, setData] = useState({});
             const [loading, setLoading] = useState(true);
-            const [apiStatus, setApiStatus] = useState({});
             const [lastUpdate, setLastUpdate] = useState(null);
 
             const fetchData = async () => {
                 try {
-                    // CoinGecko - Crypto
                     const cryptoRes = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,binancecoin,ripple,cardano&vs_currencies=usd&include_24hr_change=true');
                     const crypto = await cryptoRes.json();
                     
-                    // ExchangeRate-API - Forex
                     const forexRes = await fetch('https://open.er-api.com/v6/latest/USD');
                     const forexData = await forexRes.json();
                     
@@ -270,7 +315,6 @@
                     };
                     
                     setData(formatted);
-                    setApiStatus({ crypto: 'connected', forex: 'connected', metales: 'simulated', energia: 'simulated' });
                     setLastUpdate(new Date());
                     setLoading(false);
                 } catch (err) {
@@ -285,32 +329,34 @@
                 return () => clearInterval(interval);
             }, []);
 
-            return { data, loading, lastUpdate, apiStatus };
+            return { data, loading, lastUpdate };
         };
 
         // ==================== NOTICIAS ====================
         const NEWS_DATA = [
-            { id: 1, text: "🔥 PETRÓLEO - OPEP+ mantiene recortes de producción", impact: "positive", recommendation: "COMPRA", reason: "Menor oferta global" },
-            { id: 2, text: "📉 DÓLAR - Fed señala posible pausa en tasas", impact: "negative", recommendation: "VENDE USD", reason: "Menor rendimiento" },
-            { id: 3, text: "💰 ORO - Bancos centrales compran récord", impact: "positive", recommendation: "COMPRA", reason: "Demanda institucional récord" },
-            { id: 4, text: "🚀 BITCOIN - ETFs continúan comprando", impact: "positive", recommendation: "HODL", reason: "Adopción institucional" },
-            { id: 5, text: "⚡ GAS NATURAL - Inventarios altos", impact: "negative", recommendation: "ESPERA", reason: "Exceso de oferta" },
+            { id: 1, text: "🔥 PETRÓLEO - OPEP+ mantiene recortes", impact: "positive", recommendation: "COMPRA", reason: "Menor oferta" },
+            { id: 2, text: "📉 DÓLAR - Fed pausa tasas", impact: "negative", recommendation: "VENDE USD", reason: "Menor rendimiento" },
+            { id: 3, text: "💰 ORO - Bancos centrales compran récord", impact: "positive", recommendation: "COMPRA", reason: "Demanda récord" },
+            { id: 4, text: "🚀 BITCOIN - ETFs comprando", impact: "positive", recommendation: "HODL", reason: "Adopción institucional" },
+            { id: 5, text: "⚡ GAS NATURAL - Inventarios altos", impact: "negative", recommendation: "ESPERA", reason: "Exceso oferta" },
         ];
 
-        // ==================== GENERAR HISTORIAL ====================
-        const generateHistory = (currentPrice, volatility, points = 50) => {
+        // ==================== GENERAR HISTORIAL DINÁMICO ====================
+        const generateDynamicHistory = (currentPrice, volatility, points = 100) => {
             const data = [];
-            let price = currentPrice * (1 - (Math.random() - 0.5) * 0.05);
+            let price = currentPrice * 0.95;
             
             for (let i = 0; i < points; i++) {
-                const change = (Math.random() - 0.48) * volatility;
+                const timeOffset = (points - i) * 60000;
+                const trend = Math.sin(i / 15) * volatility * 0.5;
+                const noise = (Math.random() - 0.48) * volatility;
                 const open = price;
-                const close = price * (1 + change);
+                const close = price * (1 + trend + noise);
                 const high = Math.max(open, close) * (1 + Math.random() * volatility * 0.3);
                 const low = Math.min(open, close) * (1 - Math.random() * volatility * 0.3);
                 
                 data.push({
-                    time: Date.now() - (points - i) * 2000,
+                    time: Date.now() - timeOffset,
                     open, close, high, low,
                     value: close,
                     volume: Math.random() * 1000 + 500
@@ -372,7 +418,7 @@
         };
 
         // ==================== CANVAS CHART (VELAS) ====================
-        const LargeChart = ({ data, symbol, name, width, height }) => {
+        const LargeChart = ({ data, symbol, name, width, height, playHover }) => {
             const canvasRef = useRef(null);
             const [hoveredIndex, setHoveredIndex] = useState(null);
 
@@ -397,13 +443,11 @@
 
                 ctx.clearRect(0, 0, width, height);
                 
-                // Fondo
                 ctx.fillStyle = '#0d1117';
                 ctx.beginPath();
                 ctx.roundRect(0, 0, width, height, 12);
                 ctx.fill();
 
-                // Grid
                 ctx.strokeStyle = '#1c2333';
                 ctx.lineWidth = 0.5;
                 for (let i = 0; i <= 6; i++) {
@@ -418,6 +462,16 @@
                     ctx.fillText(price.toFixed(price > 100 ? 2 : 4), width - padding.right + 8, y + 4);
                 }
 
+                // Volumen
+                const maxVol = Math.max(...data.map(d => d.volume || 1000));
+                data.forEach((d, i) => {
+                    const x = padding.left + (i / (data.length - 1)) * chartW;
+                    const volHeight = ((d.volume || 1000) / maxVol) * 30;
+                    const isGreen = d.close >= d.open;
+                    ctx.fillStyle = isGreen ? 'rgba(0,212,170,0.2)' : 'rgba(255,71,87,0.2)';
+                    ctx.fillRect(x - candleWidth/2, height - padding.bottom - volHeight, candleWidth, volHeight);
+                });
+
                 // Velas
                 data.forEach((d, i) => {
                     const x = padding.left + (i / (data.length - 1)) * chartW;
@@ -428,7 +482,6 @@
                     const isGreen = d.close >= d.open;
                     const color = isGreen ? '#00d4aa' : '#ff4757';
 
-                    // Mecha
                     ctx.strokeStyle = color;
                     ctx.lineWidth = 1;
                     ctx.beginPath();
@@ -436,7 +489,6 @@
                     ctx.lineTo(x, yLow);
                     ctx.stroke();
 
-                    // Cuerpo
                     ctx.fillStyle = color;
                     const bodyTop = Math.min(yOpen, yClose);
                     const bodyHeight = Math.max(1, Math.abs(yClose - yOpen));
@@ -506,6 +558,7 @@
                             if (index >= 0 && index < data.length) setHoveredIndex(index);
                         }}
                         onMouseLeave={() => setHoveredIndex(null)}
+                        onMouseEnter={playHover}
                     />
                 </div>
             );
@@ -631,7 +684,7 @@
                         if (!assetData) return null;
                         const isUp = (assetData.change || 0) >= 0;
                         const flash = flashStates[asset.id];
-                        const history = generateHistory(assetData.price, assetData.price * 0.01, 30);
+                        const history = generateDynamicHistory(assetData.price, assetData.price * 0.01, 30);
 
                         return (
                             <div key={asset.id}
@@ -689,7 +742,7 @@
             const [selectedAsset, setSelectedAsset] = useState('btc');
             const [activeTab, setActiveTab] = useState('crypto');
             const [chartSize, setChartSize] = useState({ width: 900, height: 480 });
-            const { data: marketData, loading, lastUpdate, apiStatus } = useMarketData();
+            const { data: marketData, loading, lastUpdate } = useMarketData();
             const { isEnabled, toggleVoice, speak } = useVoiceAssistant();
             const { playClick, playHover, playSuccess, playAlert } = useASMRSounds();
             const containerRef = useRef(null);
@@ -730,8 +783,14 @@
 
             const currentTab = tabs.find(t => t.id === activeTab) || tabs[0];
             const selectedAssetData = marketData[selectedAsset];
-            const selectedAssetInfo = selectedAssetData;
-            const chartHistory = selectedAssetData ? generateHistory(selectedAssetData.price, selectedAssetData.price * 0.01, 100) : [];
+            const chartHistory = useMemo(() => {
+                if (!selectedAssetData) return [];
+                return generateDynamicHistory(
+                    selectedAssetData.price, 
+                    selectedAssetData.price * 0.02, 
+                    100
+                );
+            }, [selectedAssetData, lastUpdate]);
 
             return (
                 <div style={{ minHeight: '100vh' }}>
@@ -771,7 +830,14 @@
                             <>
                                 {selectedAssetData && (
                                     <div className="slide-in" style={{ marginBottom: 24 }}>
-                                        <LargeChart data={chartHistory} symbol={selectedAssetInfo.symbol} name={selectedAssetInfo.name} width={chartSize.width} height={chartSize.height} />
+                                        <LargeChart 
+                                            data={chartHistory} 
+                                            symbol={selectedAssetData.symbol} 
+                                            name={selectedAssetData.name} 
+                                            width={chartSize.width} 
+                                            height={chartSize.height} 
+                                            playHover={playHover}
+                                        />
                                         <div style={{ marginTop: 12, padding: '16px 24px', background: '#0d1117', borderRadius: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #21262d', flexWrap: 'wrap', gap: 16 }}>
                                             <div>
                                                 <div style={{ fontSize: 12, color: '#5a6577', marginBottom: 4 }}>Precio Actual</div>
@@ -803,7 +869,7 @@
                                             onClick={() => { playClick(); setActiveTab(tab.id); }}
                                             onMouseEnter={playHover}
                                         >
-                                            {tab.label} ({tab.assets?.length || 0})
+                                            <span>{tab.label} ({tab.assets?.length || 0})</span>
                                         </button>
                                     ))}
                                 </div>
