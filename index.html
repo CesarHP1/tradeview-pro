@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TradeView Pro AI - Dashboard con Voz</title>
+    <title>TradeView Pro AI - Dashboard Profesional con Voz y ASMR</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -12,28 +12,29 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Inter', sans-serif;
-            background: #0a0e17;
+            background: linear-gradient(135deg, #0a0e17 0%, #1a1f2e 100%);
             color: #e1e5eb;
             overflow-x: hidden;
         }
-        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #0d1117; }
-        ::-webkit-scrollbar-thumb { background: #2d333b; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #444c56; }
+        ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #484f58; }
+        
         @keyframes pulse-green {
-            0%, 100% { color: #00d4aa; }
-            50% { color: #00ffcc; }
+            0%, 100% { box-shadow: 0 0 0 0 rgba(0, 212, 170, 0.7); }
+            50% { box-shadow: 0 0 0 10px rgba(0, 212, 170, 0); }
         }
         @keyframes pulse-red {
-            0%, 100% { color: #ff4757; }
-            50% { color: #ff6b7a; }
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.7); }
+            50% { box-shadow: 0 0 0 10px rgba(255, 71, 87, 0); }
         }
         @keyframes flash-green {
-            0% { background: rgba(0, 212, 170, 0.3); }
+            0% { background: rgba(0, 212, 170, 0.4); }
             100% { background: transparent; }
         }
         @keyframes flash-red {
-            0% { background: rgba(255, 71, 87, 0.3); }
+            0% { background: rgba(255, 71, 87, 0.4); }
             100% { background: transparent; }
         }
         @keyframes slideIn {
@@ -44,34 +45,131 @@
             0% { transform: translateX(0); }
             100% { transform: translateX(-50%); }
         }
-        .flash-up { animation: flash-green 0.5s ease-out; }
-        .flash-down { animation: flash-red 0.5s ease-out; }
-        .slide-in { animation: slideIn 0.3s ease-out; }
-        .ticker-animation { animation: ticker 60s linear infinite; }
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 5px rgba(102, 126, 234, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(102, 126, 234, 0.8); }
+        }
+        
+        .flash-up { animation: flash-green 0.6s ease-out; }
+        .flash-down { animation: flash-red 0.6s ease-out; }
+        .slide-in { animation: slideIn 0.4s ease-out; }
+        .ticker-animation { animation: ticker 80s linear infinite; }
+        
         .voice-btn {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border: none;
             color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
+            padding: 12px 24px;
+            border-radius: 10px;
             cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
+            font-weight: 700;
+            font-size: 13px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        .voice-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+        .voice-btn:hover::before {
+            left: 100%;
         }
         .voice-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.5);
         }
         .voice-btn.active {
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            animation: pulse-voice 1.5s infinite;
+            animation: pulse-voice 2s infinite;
         }
         @keyframes pulse-voice {
             0%, 100% { box-shadow: 0 0 0 0 rgba(245, 87, 108, 0.7); }
-            50% { box-shadow: 0 0 0 10px rgba(245, 87, 108, 0); }
+            50% { box-shadow: 0 0 0 15px rgba(245, 87, 108, 0); }
+        }
+        
+        .analyze-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .analyze-btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        .analyze-btn:hover::after {
+            width: 300px;
+            height: 300px;
+        }
+        .analyze-btn:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.5);
+        }
+        
+        .tab-btn {
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 2px solid #21262d;
+            background: #161b22;
+            color: #8b949e;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 700;
+            whiteSpace: 'nowrap';
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .tab-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.3s;
+            z-index: 0;
+        }
+        .tab-btn:hover::before {
+            width: 100%;
+        }
+        .tab-btn span {
+            position: relative;
+            z-index: 1;
+        }
+        .tab-btn.active {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+        }
+        .tab-btn.active::before {
+            width: 100%;
         }
     </style>
 </head>
@@ -81,86 +179,232 @@
     <script type="text/babel">
         const { useState, useEffect, useRef, useCallback, useMemo } = React;
 
+        // ==================== SONIDOS ASMR ====================
+        const useASMRSounds = () => {
+            const audioContext = useRef(null);
+
+            useEffect(() => {
+                audioContext.current = new (window.AudioContext || window.webkitAudioContext)();
+            }, []);
+
+            const playTone = (frequency, duration, type = 'sine', volume = 0.1) => {
+                if (!audioContext.current) return;
+                
+                const oscillator = audioContext.current.createOscillator();
+                const gainNode = audioContext.current.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.current.destination);
+                
+                oscillator.frequency.value = frequency;
+                oscillator.type = type;
+                
+                gainNode.gain.setValueAtTime(volume, audioContext.current.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.current.currentTime + duration);
+                
+                oscillator.start(audioContext.current.currentTime);
+                oscillator.stop(audioContext.current.currentTime + duration);
+            };
+
+            const playClick = () => {
+                playTone(800, 0.1, 'sine', 0.15);
+                setTimeout(() => playTone(1200, 0.08, 'sine', 0.1), 30);
+            };
+
+            const playHover = () => {
+                playTone(600, 0.05, 'sine', 0.05);
+            };
+
+            const playSuccess = () => {
+                playTone(523.25, 0.15, 'sine', 0.2);
+                setTimeout(() => playTone(659.25, 0.15, 'sine', 0.2), 100);
+                setTimeout(() => playTone(783.99, 0.2, 'sine', 0.2), 200);
+            };
+
+            const playAlert = () => {
+                playTone(880, 0.2, 'sine', 0.15);
+                setTimeout(() => playTone(1100, 0.3, 'sine', 0.15), 150);
+            };
+
+            return { playClick, playHover, playSuccess, playAlert };
+        };
+
         // ==================== DATA GENERATION ====================
-        const generateInitialHistory = (base, volatility, points = 60) => {
+        const generateInitialHistory = (base, volatility, points = 100) => {
             const data = [];
             let current = base;
             for (let i = 0; i < points; i++) {
                 const change = (Math.random() - 0.48) * volatility;
                 current += change;
+                const open = current - change * 0.3;
+                const close = current;
+                const high = Math.max(open, close) + Math.random() * volatility * 0.3;
+                const low = Math.min(open, close) - Math.random() * volatility * 0.3;
+                
                 data.push({
                     value: current,
                     time: Date.now() - (points - i) * 2000,
-                    high: current + Math.random() * volatility * 0.5,
-                    low: current - Math.random() * volatility * 0.5,
-                    open: current - change * 0.3,
-                    close: current
+                    high, low, open, close,
+                    volume: Math.random() * 1000 + 500
                 });
             }
             return data;
         };
 
         const ASSETS = {
-            metales: [
-                { id: 'gold', name: 'Oro (XAU/USD)', symbol: 'XAU', basePrice: 2345.50, volatility: 2.5, icon: '🥇', category: 'metal' },
-                { id: 'silver', name: 'Plata (XAG/USD)', symbol: 'XAG', basePrice: 28.45, volatility: 0.15, icon: '🥈', category: 'metal' },
-                { id: 'platinum', name: 'Platino (XPT/USD)', symbol: 'XPT', basePrice: 985.30, volatility: 3.0, icon: '⚪', category: 'metal' },
-                { id: 'palladium', name: 'Paladio (XPD/USD)', symbol: 'XPD', basePrice: 1025.80, volatility: 4.0, icon: '🔘', category: 'metal' },
-                { id: 'copper', name: 'Cobre (HG)', symbol: 'HG', basePrice: 4.52, volatility: 0.03, icon: '🟤', category: 'metal' },
-            ],
             energia: [
-                { id: 'oil', name: 'Petróleo WTI', symbol: 'WTI', basePrice: 78.45, volatility: 0.8, icon: '🛢️', category: 'energy' },
-                { id: 'brent', name: 'Petróleo Brent', symbol: 'BRENT', basePrice: 82.30, volatility: 0.9, icon: '🛢️', category: 'energy' },
-                { id: 'gas', name: 'Gas Natural', symbol: 'NG', basePrice: 2.85, volatility: 0.05, icon: '🔥', category: 'energy' },
+                { id: 'oil', name: 'Petróleo WTI Crudo', symbol: 'WTI', basePrice: 78.45, volatility: 0.8, icon: '🛢️', category: 'energy', description: 'Petróleo ligero de Texas' },
+                { id: 'brent', name: 'Petróleo Brent', symbol: 'BRENT', basePrice: 82.30, volatility: 0.9, icon: '🛢️', category: 'energy', description: 'Referencia del Mar del Norte' },
+                { id: 'gas', name: 'Gas Natural Henry Hub', symbol: 'NG', basePrice: 2.85, volatility: 0.05, icon: '🔥', category: 'energy', description: 'Gas natural para calefacción' },
+                { id: 'heating', name: 'Aceite de Calefacción', symbol: 'HO', basePrice: 2.45, volatility: 0.04, icon: '🔥', category: 'energy', description: 'Combustible para calefacción' },
+            ],
+            metales: [
+                { id: 'gold', name: 'Oro (XAU/USD)', symbol: 'XAU', basePrice: 2345.50, volatility: 2.5, icon: '🥇', category: 'metal', description: 'Metal precioso refugio' },
+                { id: 'silver', name: 'Plata (XAG/USD)', symbol: 'XAG', basePrice: 28.45, volatility: 0.15, icon: '🥈', category: 'metal', description: 'Metal industrial y precioso' },
+                { id: 'platinum', name: 'Platino (XPT/USD)', symbol: 'XPT', basePrice: 985.30, volatility: 3.0, icon: '⚪', category: 'metal', description: 'Usado en joyería e industria' },
+                { id: 'palladium', name: 'Paladio (XPD/USD)', symbol: 'XPD', basePrice: 1025.80, volatility: 4.0, icon: '🔘', category: 'metal', description: 'Catalizadores automotrices' },
+                { id: 'copper', name: 'Cobre (HG)', symbol: 'HG', basePrice: 4.52, volatility: 0.03, icon: '🟤', category: 'metal', description: 'Metal industrial clave' },
             ],
             forex: [
-                { id: 'eurusd', name: 'EUR/USD', symbol: 'EUR', basePrice: 1.0845, volatility: 0.001, icon: '💶', category: 'forex' },
-                { id: 'gbpusd', name: 'GBP/USD', symbol: 'GBP', basePrice: 1.2712, volatility: 0.0015, icon: '💷', category: 'forex' },
-                { id: 'usdjpy', name: 'USD/JPY', symbol: 'JPY', basePrice: 154.32, volatility: 0.1, icon: '💴', category: 'forex' },
-                { id: 'usdchf', name: 'USD/CHF', symbol: 'CHF', basePrice: 0.8845, volatility: 0.0008, icon: '🇨', category: 'forex' },
-                { id: 'audusd', name: 'AUD/USD', symbol: 'AUD', basePrice: 0.6612, volatility: 0.001, icon: '🇦', category: 'forex' },
+                { id: 'eurusd', name: 'Euro vs Dólar', symbol: 'EUR/USD', basePrice: 1.0845, volatility: 0.001, icon: '💶', category: 'forex', description: 'Par más negociado del mundo' },
+                { id: 'gbpusd', name: 'Libra vs Dólar', symbol: 'GBP/USD', basePrice: 1.2712, volatility: 0.0015, icon: '💷', category: 'forex', description: 'Cable - Par volátil' },
+                { id: 'usdjpy', name: 'Dólar vs Yen', symbol: 'USD/JPY', basePrice: 154.32, volatility: 0.1, icon: '💴', category: 'forex', description: 'Refugio asiático' },
+                { id: 'usdchf', name: 'Dólar vs Franco', symbol: 'USD/CHF', basePrice: 0.8845, volatility: 0.0008, icon: '🇨', category: 'forex', description: 'Franco suizo refugio' },
+                { id: 'audusd', name: 'Dólar Australiano', symbol: 'AUD/USD', basePrice: 0.6612, volatility: 0.001, icon: '🇦', category: 'forex', description: 'Aussie - Ligado a commodities' },
+                { id: 'usdcad', name: 'Dólar Canadiense', symbol: 'USD/CAD', basePrice: 1.3545, volatility: 0.001, icon: '🇨🇦', category: 'forex', description: 'Loonie - Petróleo' },
             ],
             crypto: [
-                { id: 'btc', name: 'Bitcoin', symbol: 'BTC', basePrice: 67234.50, volatility: 200.0, icon: '₿', category: 'crypto' },
-                { id: 'eth', name: 'Ethereum', symbol: 'ETH', basePrice: 3456.80, volatility: 30.0, icon: '⟠', category: 'crypto' },
-                { id: 'sol', name: 'Solana', symbol: 'SOL', basePrice: 172.45, volatility: 3.0, icon: '◎', category: 'crypto' },
-                { id: 'bnb', name: 'BNB', symbol: 'BNB', basePrice: 598.30, volatility: 4.0, icon: '🔶', category: 'crypto' },
+                { id: 'btc', name: 'Bitcoin', symbol: 'BTC', basePrice: 67234.50, volatility: 200.0, icon: '₿', category: 'crypto', description: 'Oro digital - Reserva de valor' },
+                { id: 'eth', name: 'Ethereum', symbol: 'ETH', basePrice: 3456.80, volatility: 30.0, icon: '⟠', category: 'crypto', description: 'Contratos inteligentes' },
+                { id: 'sol', name: 'Solana', symbol: 'SOL', basePrice: 172.45, volatility: 3.0, icon: '◎', category: 'crypto', description: 'Blockchain rápida' },
+                { id: 'bnb', name: 'BNB', symbol: 'BNB', basePrice: 598.30, volatility: 4.0, icon: '🔶', category: 'crypto', description: 'Exchange Binance' },
+                { id: 'xrp', name: 'Ripple', symbol: 'XRP', basePrice: 0.6234, volatility: 0.01, icon: '💧', category: 'crypto', description: 'Pagos transfronterizos' },
             ],
             bolsa: [
-                { id: 'sp500', name: 'S&P 500', symbol: 'SPX', basePrice: 5234.18, volatility: 8.0, icon: '📊', category: 'index' },
-                { id: 'nasdaq', name: 'NASDAQ Composite', symbol: 'IXIC', basePrice: 16399.52, volatility: 25.0, icon: '💻', category: 'index' },
-                { id: 'dow', name: 'Dow Jones', symbol: 'DJI', basePrice: 39872.99, volatility: 50.0, icon: '🏛️', category: 'index' },
-                { id: 'ibex', name: 'IBEX 35', symbol: 'IBEX', basePrice: 10892.30, volatility: 15.0, icon: '🇪🇸', category: 'index' },
+                { id: 'sp500', name: 'S&P 500', symbol: 'SPX', basePrice: 5234.18, volatility: 8.0, icon: '📊', category: 'index', description: '500 empresas líderes USA' },
+                { id: 'nasdaq', name: 'NASDAQ Composite', symbol: 'IXIC', basePrice: 16399.52, volatility: 25.0, icon: '💻', category: 'index', description: 'Tecnológicas USA' },
+                { id: 'dow', name: 'Dow Jones', symbol: 'DJI', basePrice: 39872.99, volatility: 50.0, icon: '🏛️', category: 'index', description: '30 industriales USA' },
+                { id: 'ibex', name: 'IBEX 35', symbol: 'IBEX', basePrice: 10892.30, volatility: 15.0, icon: '🇪', category: 'index', description: 'Bolsa española' },
+                { id: 'nikkei', name: 'Nikkei 225', symbol: 'N225', basePrice: 38456.70, volatility: 80.0, icon: '🇯🇵', category: 'index', description: 'Bolsa de Tokio' },
             ],
             acciones: [
-                { id: 'aapl', name: 'Apple Inc.', symbol: 'AAPL', basePrice: 189.84, volatility: 1.2, icon: '🍎', category: 'stock' },
-                { id: 'msft', name: 'Microsoft Corp.', symbol: 'MSFT', basePrice: 417.88, volatility: 2.0, icon: '🪟', category: 'stock' },
-                { id: 'googl', name: 'Alphabet Inc.', symbol: 'GOOGL', basePrice: 174.13, volatility: 1.5, icon: '🔍', category: 'stock' },
-                { id: 'amzn', name: 'Amazon.com Inc.', symbol: 'AMZN', basePrice: 186.49, volatility: 1.8, icon: '📦', category: 'stock' },
-                { id: 'tsla', name: 'Tesla Inc.', symbol: 'TSLA', basePrice: 248.42, volatility: 5.0, icon: '🚗', category: 'stock' },
-                { id: 'nvda', name: 'NVIDIA Corp.', symbol: 'NVDA', basePrice: 875.28, volatility: 8.0, icon: '🎮', category: 'stock' },
+                { id: 'aapl', name: 'Apple Inc.', symbol: 'AAPL', basePrice: 189.84, volatility: 1.2, icon: '🍎', category: 'stock', description: 'Tecnología - iPhone' },
+                { id: 'msft', name: 'Microsoft Corp.', symbol: 'MSFT', basePrice: 417.88, volatility: 2.0, icon: '🪟', category: 'stock', description: 'Software - Cloud - IA' },
+                { id: 'googl', name: 'Alphabet Inc.', symbol: 'GOOGL', basePrice: 174.13, volatility: 1.5, icon: '🔍', category: 'stock', description: 'Google - Publicidad' },
+                { id: 'amzn', name: 'Amazon.com Inc.', symbol: 'AMZN', basePrice: 186.49, volatility: 1.8, icon: '📦', category: 'stock', description: 'E-commerce - AWS' },
+                { id: 'tsla', name: 'Tesla Inc.', symbol: 'TSLA', basePrice: 248.42, volatility: 5.0, icon: '🚗', category: 'stock', description: 'Vehículos eléctricos' },
+                { id: 'nvda', name: 'NVIDIA Corp.', symbol: 'NVDA', basePrice: 875.28, volatility: 8.0, icon: '🎮', category: 'stock', description: 'GPUs - Inteligencia Artificial' },
+                { id: 'meta', name: 'Meta Platforms', symbol: 'META', basePrice: 505.75, volatility: 4.0, icon: '👤', category: 'stock', description: 'Facebook - Instagram - Metaverso' },
             ],
             bienesRaices: [
-                { id: 'vnq', name: 'VNQ REIT Index', symbol: 'VNQ', basePrice: 88.45, volatility: 0.5, icon: '🏢', category: 'realestate' },
-                { id: 'iyr', name: 'iShares Real Estate', symbol: 'IYR', basePrice: 92.30, volatility: 0.4, icon: '🏗️', category: 'realestate' },
+                { id: 'vnq', name: 'VNQ REIT Index', symbol: 'VNQ', basePrice: 88.45, volatility: 0.5, icon: '🏢', category: 'realestate', description: 'Bienes raíces comerciales' },
+                { id: 'iyr', name: 'iShares Real Estate', symbol: 'IYR', basePrice: 92.30, volatility: 0.4, icon: '🏗️', category: 'realestate', description: 'REITs diversificados' },
+                { id: 'xlre', name: 'Real Estate Select', symbol: 'XLRE', basePrice: 38.72, volatility: 0.3, icon: '🏠', category: 'realestate', description: 'Sector inmobiliario' },
+            ],
+            commodities: [
+                { id: 'corn', name: 'Maíz', symbol: 'ZC', basePrice: 4.52, volatility: 0.03, icon: '🌽', category: 'commodity', description: 'Grano básico alimenticio' },
+                { id: 'wheat', name: 'Trigo', symbol: 'ZW', basePrice: 6.15, volatility: 0.05, icon: '🌾', category: 'commodity', description: 'Cereal esencial' },
+                { id: 'soybean', name: 'Soja', symbol: 'ZS', basePrice: 12.34, volatility: 0.08, icon: '🫘', category: 'commodity', description: 'Proteína vegetal' },
+                { id: 'coffee', name: 'Café Arábica', symbol: 'KC', basePrice: 2.15, volatility: 0.04, icon: '☕', category: 'commodity', description: 'Bebida más popular' },
+                { id: 'sugar', name: 'Azúcar', symbol: 'SB', basePrice: 0.21, volatility: 0.003, icon: '🍬', category: 'commodity', description: 'Endulzante global' },
             ]
         };
 
-        // ==================== NOTICIAS ====================
+        // ==================== NOTICIAS CON ANÁLISIS ====================
         const NEWS_DATA = [
-            { id: 1, text: "🔥 PETRÓLEO SUBE 2% - OPEP+ anuncia recorte de producción - APROVECHA PARA COMPRAR", impact: "positive", asset: "oil" },
-            { id: 2, text: "📉 DÓLAR BAJA - Fed mantiene tasas estables - MOMENTO DE VENDER USD", impact: "negative", asset: "forex" },
-            { id: 3, text: "💰 ORO EN MÁXIMOS - Incertidumbre geopolítica - COMPRA RECOMENDADA", impact: "positive", asset: "gold" },
-            { id: 4, text: "🚀 BITCOIN ROMPE RESISTENCIA - Institucional entra al mercado - HODL", impact: "positive", asset: "btc" },
-            { id: 5, text: "⚡ GAS NATURAL CAE - Inventario alto - ESPERA MEJOR PRECIO", impact: "negative", asset: "gas" },
-            { id: 6, text: "📊 S&P 500 NUEVO RÉCORD - Earnings positivos - MANTÉN POSICIÓN", impact: "positive", asset: "sp500" },
-            { id: 7, text: "🏦 EURO FORTALECE - BCE hawkish - COMPRA EUR/USD", impact: "positive", asset: "eurusd" },
-            { id: 8, text: "💎 PLATA INDUSTRIAL - Demanda tecnológica sube - OPORTUNIDAD DE ENTRADA", impact: "positive", asset: "silver" },
-            { id: 9, text: "🎮 NVIDIA ANUNCIA NUEVA GPU - IA impulsa ganancias - ACCIÓN ALCISTA", impact: "positive", asset: "nvda" },
-            { id: 10, text: "🚗 TESLA EN VOLATILIDAD - Entrega mixta - ESPERA CONFIRMACIÓN", impact: "neutral", asset: "tsla" },
+            { 
+                id: 1, 
+                text: "🔥 PETRÓLEO SUBE 2% - OPEP+ anuncia recorte de producción", 
+                impact: "positive", 
+                asset: "oil",
+                analysis: "La OPEP+ acaba de anunciar un recorte de producción de 1 millón de barriles diarios. Esto reduce la oferta global mientras la demanda se mantiene estable. Razón para comprar: Menor oferta con demanda constante = precios más altos. Objetivo: 82 dólares. Stop loss: 76 dólares.",
+                recommendation: "COMPRA",
+                reason: "Recorte de oferta OPEP+ reduce suministro global"
+            },
+            { 
+                id: 2, 
+                text: "📉 DÓLAR BAJA - Fed mantiene tasas estables sin sorpresas", 
+                impact: "negative", 
+                asset: "forex",
+                analysis: "La Reserva Federal mantuvo las tasas de interés sin cambios y no dio señales de subidas futuras. Un dólar más débil hace que los activos denominados en dólares sean más atractivos. Razón para vender USD: Tasas estables = menor rendimiento del dólar. Mejor comprar EUR/USD o oro.",
+                recommendation: "VENDE USD",
+                reason: "Fed sin sorpresas debilita al dólar"
+            },
+            { 
+                id: 3, 
+                text: "💰 ORO EN MÁXIMOS HISTÓRICOS - Incertidumbre geopolítica", 
+                impact: "positive", 
+                asset: "gold",
+                analysis: "El oro rompió su máximo histórico de 2400 dólares por onza. Las tensiones en Medio Oriente y Europa del Este impulsan la demanda de activos refugio. Razón para comprar: Inversores huyen del riesgo hacia el oro. Banco central chinos comprando récord. Objetivo: 2500 dólares.",
+                recommendation: "COMPRA FUERTE",
+                reason: "Refugio seguro en crisis geopolítica + compras de bancos centrales"
+            },
+            { 
+                id: 4, 
+                text: "🚀 BITCOIN ROMPE 70K - ETFs institucionales entran masivamente", 
+                impact: "positive", 
+                asset: "btc",
+                analysis: "Bitcoin superó los 70,000 dólares impulsado por la entrada de 500 millones en ETFs esta semana. BlackRock y Fidelity lideran las compras. Razón para comprar: Adopción institucional acelera. Halving reciente reduce oferta. Momentum alcista fuerte. Objetivo: 75,000 dólares.",
+                recommendation: "COMPRA Y MANTÉN",
+                reason: "Institucionales comprando + oferta reducida por halving"
+            },
+            { 
+                id: 5, 
+                text: "⚡ GAS NATURAL CAE 5% - Inventario supera expectativas", 
+                impact: "negative", 
+                asset: "gas",
+                analysis: "El inventario de gas natural subió 80 billones de pies cúbicos, muy por encima de los 50 esperados. El clima cálido reduce demanda de calefacción. Razón para ESPERAR: Exceso de oferta presiona precios a la baja. No compres aún. Espera a 2.50 dólares para entrada.",
+                recommendation: "ESPERA O VENDE",
+                reason: "Inventario alto + clima cálido = menor demanda"
+            },
+            { 
+                id: 6, 
+                text: "📊 S&P 500 NUEVO RÉCORD - Earnings superan expectativas 15%", 
+                impact: "positive", 
+                asset: "sp500",
+                analysis: "El 78% de empresas del S&P 500 reportaron ganancias por encima de estimaciones, con crecimiento promedio de 15%. Sector tecnológico lidera. Razón para mantener: Fundamentos sólidos, economía resiliente, IA impulsa productividad. Objetivo: 5400 puntos.",
+                recommendation: "MANTÉN O COMPRA",
+                reason: "Ganancias corporativas fuertes + economía saludable"
+            },
+            { 
+                id: 7, 
+                text: "🏦 EURO FORTALECE - BCE hawkish sorprende mercados", 
+                impact: "positive", 
+                asset: "eurusd",
+                analysis: "El Banco Central Europeo señaló que podría mantener tasas altas por más tiempo para combatir inflación persistente. Razón para comprar EUR/USD: Diferencial de tasas favorece al euro. Economía europea mostrando resiliencia. Objetivo: 1.1000.",
+                recommendation: "COMPRA EUR/USD",
+                reason: "BCE más hawkish que Fed = euro más fuerte"
+            },
+            { 
+                id: 8, 
+                text: "💎 PLATA INDUSTRIAL - Demanda tecnológica sube 20%", 
+                impact: "positive", 
+                asset: "silver",
+                analysis: "La demanda industrial de plata creció 20% por paneles solares y electrónica. Déficit de oferta proyectado. Razón para comprar: Uso industrial + inversión. Ratio oro/plata en 80:1 históricamente barato. Objetivo: 32 dólares.",
+                recommendation: "COMPRA",
+                reason: "Déficit de oferta + demanda industrial récord"
+            },
+            { 
+                id: 9, 
+                text: "🎮 NVIDIA ANUNCIA NUEVA GPU - IA impulsa ganancias 200%", 
+                impact: "positive", 
+                asset: "nvda",
+                analysis: "NVIDIA reportó crecimiento de 200% en ingresos de IA. Nueva arquitectura Blackwell agotada hasta 2025. Razón para comprar: Dominio absoluto en chips de IA. Demanda de data centers explosiva. Margen de beneficio expandiendo. Objetivo: 950 dólares.",
+                recommendation: "COMPRA FUERTE",
+                reason: "Líder indiscutible en IA + demanda insaciable"
+            },
+            { 
+                id: 10, 
+                text: "🚗 TESLA VOLÁTIL - Entregas mixtas, competencia china", 
+                impact: "neutral", 
+                asset: "tsla",
+                analysis: "Tesla entregó 386,000 vehículos vs 395,000 esperados. BYD china gana terreno. Razón para ESPERAR: Competencia intensa presiona márgenes. Precio alto no justifica crecimiento actual. Espera corrección a 220 dólares para comprar.",
+                recommendation: "ESPERA MEJOR PRECIO",
+                reason: "Crecimiento desacelerando + competencia feroz"
+            },
         ];
 
-        // ==================== VOZ AI ====================
+        // ==================== VOZ AI PROFESIONAL ====================
         const useVoiceAssistant = () => {
             const [isEnabled, setIsEnabled] = useState(false);
             const [currentVoice, setCurrentVoice] = useState(null);
@@ -171,10 +415,9 @@
             useEffect(() => {
                 const loadVoices = () => {
                     voices.current = synth.current.getVoices();
-                    // Buscar voz femenina en español
                     const femaleVoice = voices.current.find(voice => 
                         voice.lang.includes('es') && 
-                        (voice.name.includes('Female') || voice.name.includes('Femenina') || voice.name.includes('Google español'))
+                        (voice.name.includes('Female') || voice.name.includes('Femenina') || voice.name.includes('Google español') || voice.name.includes('Monica'))
                     ) || voices.current.find(voice => voice.lang.includes('es'));
                     
                     if (femaleVoice) {
@@ -188,10 +431,9 @@
                 }
             }, []);
 
-            const speak = useCallback((text, priority = 'normal') => {
+            const speak = useCallback((text, priority = 'normal', rate = 0.9) => {
                 if (!isEnabled || !currentVoice) return;
 
-                // Cancelar habla anterior si es alta prioridad
                 if (priority === 'high') {
                     synth.current.cancel();
                 }
@@ -199,9 +441,9 @@
                 const utterance = new SpeechSynthesisUtterance(text);
                 utterance.voice = currentVoice;
                 utterance.lang = 'es-ES';
-                utterance.rate = 0.95; // Un poco más lento para ASMR
-                utterance.pitch = 1.0; // Tono natural
-                utterance.volume = 0.8;
+                utterance.rate = rate;
+                utterance.pitch = 1.0;
+                utterance.volume = 0.85;
 
                 synth.current.speak(utterance);
                 setLastAnnouncement(text);
@@ -217,7 +459,7 @@
             return { isEnabled, toggleVoice, speak, lastAnnouncement };
         };
 
-        // ==================== MINI CHART ====================
+        // ==================== MINI CHART PROFESIONAL ====================
         const MiniChart = ({ data, color, width = 120, height = 40 }) => {
             const canvasRef = useRef(null);
 
@@ -230,7 +472,7 @@
                 canvas.height = height * dpr;
                 ctx.scale(dpr, dpr);
 
-                const values = data.map(d => d.value);
+                const values = data.map(d => d.close || d.value);
                 const min = Math.min(...values);
                 const max = Math.max(...values);
                 const range = max - min || 1;
@@ -238,14 +480,14 @@
                 ctx.clearRect(0, 0, width, height);
 
                 const gradient = ctx.createLinearGradient(0, 0, 0, height);
-                gradient.addColorStop(0, color + '30');
+                gradient.addColorStop(0, color + '40');
                 gradient.addColorStop(1, color + '05');
 
                 ctx.beginPath();
                 ctx.moveTo(0, height);
                 data.forEach((d, i) => {
                     const x = (i / (data.length - 1)) * width;
-                    const y = height - ((d.value - min) / range) * (height - 4) - 2;
+                    const y = height - ((d.close - min) / range) * (height - 4) - 2;
                     ctx.lineTo(x, y);
                 });
                 ctx.lineTo(width, height);
@@ -256,22 +498,29 @@
                 ctx.beginPath();
                 data.forEach((d, i) => {
                     const x = (i / (data.length - 1)) * width;
-                    const y = height - ((d.value - min) / range) * (height - 4) - 2;
+                    const y = height - ((d.close - min) / range) * (height - 4) - 2;
                     if (i === 0) ctx.moveTo(x, y);
                     else ctx.lineTo(x, y);
                 });
                 ctx.strokeStyle = color;
-                ctx.lineWidth = 1.5;
+                ctx.lineWidth = 2;
                 ctx.stroke();
+
+                const lastY = height - ((data[data.length - 1].close - min) / range) * (height - 4) - 2;
+                ctx.beginPath();
+                ctx.arc(width, lastY, 3, 0, Math.PI * 2);
+                ctx.fillStyle = color;
+                ctx.fill();
             }, [data, color, width, height]);
 
             return <canvas ref={canvasRef} width={width} height={height} style={{ width, height }} />;
         };
 
-        // ==================== LARGE CHART ====================
+        // ==================== LARGE CHART PROFESIONAL COMPLETO ====================
         const LargeChart = ({ data, symbol, name, width, height }) => {
             const canvasRef = useRef(null);
             const [hoveredIndex, setHoveredIndex] = useState(null);
+            const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
             useEffect(() => {
                 const canvas = canvasRef.current;
@@ -282,13 +531,13 @@
                 canvas.height = height * dpr;
                 ctx.scale(dpr, dpr);
 
-                const values = data.map(d => d.value);
+                const values = data.map(d => d.value || d.close);
                 const highs = data.map(d => d.high);
                 const lows = data.map(d => d.low);
-                const min = Math.min(...lows) * 0.999;
-                const max = Math.max(...highs) * 1.001;
+                const min = Math.min(...lows) * 0.998;
+                const max = Math.max(...highs) * 1.002;
                 const range = max - min || 1;
-                const padding = { top: 30, right: 60, bottom: 40, left: 10 };
+                const padding = { top: 40, right: 70, bottom: 50, left: 10 };
                 const chartW = width - padding.left - padding.right;
                 const chartH = height - padding.top - padding.bottom;
 
@@ -299,12 +548,12 @@
 
                 ctx.fillStyle = '#0d1117';
                 ctx.beginPath();
-                ctx.roundRect(0, 0, width, height, 8);
+                ctx.roundRect(0, 0, width, height, 12);
                 ctx.fill();
 
                 ctx.strokeStyle = '#1c2333';
                 ctx.lineWidth = 0.5;
-                const gridLines = 5;
+                const gridLines = 6;
                 for (let i = 0; i <= gridLines; i++) {
                     const y = padding.top + (i / gridLines) * chartH;
                     ctx.beginPath();
@@ -316,12 +565,22 @@
                     ctx.fillStyle = '#5a6577';
                     ctx.font = '11px Inter';
                     ctx.textAlign = 'left';
-                    ctx.fillText(price.toFixed(price > 100 ? 2 : 4), width - padding.right + 5, y + 4);
+                    ctx.fillText(price.toFixed(price > 100 ? 2 : 4), width - padding.right + 8, y + 4);
                 }
 
+                const maxVol = Math.max(...data.map(d => d.volume || 1000));
+                data.forEach((d, i) => {
+                    const x = padding.left + (i / (data.length - 1)) * chartW;
+                    const vol = d.volume || 1000;
+                    const barH = (vol / maxVol) * 30;
+                    const barColor = d.close >= d.open ? 'rgba(0,212,170,0.2)' : 'rgba(255,71,87,0.2)';
+                    ctx.fillStyle = barColor;
+                    ctx.fillRect(x - 2, height - padding.bottom - barH, 4, barH);
+                });
+
                 const gradient = ctx.createLinearGradient(0, padding.top, 0, height - padding.bottom);
-                gradient.addColorStop(0, mainColor + '25');
-                gradient.addColorStop(0.5, mainColor + '08');
+                gradient.addColorStop(0, mainColor + '30');
+                gradient.addColorStop(0.5, mainColor + '10');
                 gradient.addColorStop(1, mainColor + '00');
 
                 ctx.beginPath();
@@ -344,12 +603,127 @@
                     else ctx.lineTo(x, y);
                 });
                 ctx.strokeStyle = mainColor;
-                ctx.lineWidth = 2;
+                ctx.lineWidth = 2.5;
+                ctx.lineJoin = 'round';
+                ctx.lineCap = 'round';
                 ctx.stroke();
 
-            }, [data, symbol, name, width, height]);
+                ctx.strokeStyle = mainColor + '50';
+                ctx.lineWidth = 6;
+                ctx.beginPath();
+                data.forEach((d, i) => {
+                    const x = padding.left + (i / (data.length - 1)) * chartW;
+                    const y = padding.top + (1 - (d.value - min) / range) * chartH;
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                });
+                ctx.stroke();
 
-            const isUp = data.length >= 2 && data[data.length - 1].value >= data[0].value;
+                const candleWidth = Math.max(2, chartW / data.length * 0.7);
+                data.forEach((d, i) => {
+                    const x = padding.left + (i / (data.length - 1)) * chartW;
+                    const yOpen = padding.top + (1 - (d.open - min) / range) * chartH;
+                    const yClose = padding.top + (1 - (d.close - min) / range) * chartH;
+                    const yHigh = padding.top + (1 - (d.high - min) / range) * chartH;
+                    const yLow = padding.top + (1 - (d.low - min) / range) * chartH;
+
+                    const bullish = d.close >= d.open;
+                    ctx.strokeStyle = bullish ? '#00d4aa' : '#ff4757';
+                    ctx.lineWidth = 1;
+
+                    ctx.beginPath();
+                    ctx.moveTo(x, yHigh);
+                    ctx.lineTo(x, yLow);
+                    ctx.stroke();
+
+                    ctx.fillStyle = bullish ? '#00d4aa' : '#ff4757';
+                    const bodyTop = Math.min(yOpen, yClose);
+                    const bodyHeight = Math.max(1, Math.abs(yClose - yOpen));
+                    ctx.fillRect(x - candleWidth / 2, bodyTop, candleWidth, bodyHeight);
+                });
+
+                const lastValue = data[data.length - 1].value;
+                const lastY = padding.top + (1 - (lastValue - min) / range) * chartH;
+                ctx.setLineDash([5, 5]);
+                ctx.strokeStyle = mainColor + '80';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(padding.left, lastY);
+                ctx.lineTo(width - padding.right, lastY);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                ctx.fillStyle = mainColor;
+                ctx.beginPath();
+                ctx.roundRect(width - padding.right, lastY - 12, 65, 24, 4);
+                ctx.fill();
+                ctx.fillStyle = '#000';
+                ctx.font = 'bold 11px Inter';
+                ctx.textAlign = 'center';
+                ctx.fillText(lastValue.toFixed(lastValue > 100 ? 2 : 4), width - padding.right + 32, lastY + 4);
+
+                if (hoveredIndex !== null && hoveredIndex < data.length) {
+                    const hx = padding.left + (hoveredIndex / (data.length - 1)) * chartW;
+                    const hy = padding.top + (1 - (data[hoveredIndex].value - min) / range) * chartH;
+
+                    ctx.setLineDash([4, 4]);
+                    ctx.strokeStyle = '#4a5568';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(hx, padding.top);
+                    ctx.lineTo(hx, height - padding.bottom);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(padding.left, hy);
+                    ctx.lineTo(width - padding.right, hy);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+
+                    ctx.beginPath();
+                    ctx.arc(hx, hy, 6, 0, Math.PI * 2);
+                    ctx.fillStyle = mainColor;
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(hx, hy, 10, 0, Math.PI * 2);
+                    ctx.strokeStyle = mainColor + '60';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+
+                ctx.fillStyle = '#e1e5eb';
+                ctx.font = 'bold 15px Inter';
+                ctx.textAlign = 'left';
+                ctx.fillText(`${symbol}  ${name}`, padding.left + 15, 25);
+
+                ctx.fillStyle = '#5a6577';
+                ctx.font = '11px Inter';
+                ctx.textAlign = 'center';
+                const timeStep = Math.floor(data.length / 6);
+                for (let i = 0; i < data.length; i += timeStep) {
+                    const x = padding.left + (i / (data.length - 1)) * chartW;
+                    const time = new Date(data[i].time);
+                    ctx.fillText(time.toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' }), x, height - 10);
+                }
+
+            }, [data, symbol, name, width, height, hoveredIndex]);
+
+            const handleMouseMove = (e) => {
+                const rect = canvasRef.current.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const padding = { left: 10, right: 70 };
+                const chartW = width - padding.left - padding.right;
+                const index = Math.round(((x - padding.left) / chartW) * (data.length - 1));
+                if (index >= 0 && index < data.length) {
+                    setHoveredIndex(index);
+                    setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+                }
+            };
+
+            const currentPrice = data[data.length - 1]?.value || 0;
+            const openPrice = data[0]?.value || 0;
+            const change = currentPrice - openPrice;
+            const changePercent = ((change / openPrice) * 100).toFixed(2);
+            const isUp = change >= 0;
 
             return (
                 <div style={{ position: 'relative' }}>
@@ -357,20 +731,51 @@
                         ref={canvasRef}
                         width={width}
                         height={height}
-                        style={{ width, height, borderRadius: 8 }}
+                        style={{ width, height, cursor: 'crosshair', borderRadius: 12 }}
+                        onMouseMove={handleMouseMove}
+                        onMouseLeave={() => setHoveredIndex(null)}
                     />
+                    {hoveredIndex !== null && data[hoveredIndex] && (
+                        <div className="slide-in" style={{
+                            position: 'absolute',
+                            top: 50,
+                            left: 15,
+                            background: 'rgba(13,17,23,0.98)',
+                            border: '1px solid #2d333b',
+                            borderRadius: 10,
+                            padding: '12px 16px',
+                            fontSize: 12,
+                            pointerEvents: 'none',
+                            backdropFilter: 'blur(10px)',
+                            minWidth: 220,
+                            boxShadow: '0 8px 24px rgba(0,0,0,0.4)'
+                        }}>
+                            <div style={{ color: '#5a6577', marginBottom: 6, fontSize: 11, fontWeight: 600 }}>
+                                {new Date(data[hoveredIndex].time).toLocaleString('es')}
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 16px' }}>
+                                <div><span style={{ color: '#5a6577' }}>Apertura: </span><span style={{ color: '#e1e5eb', fontWeight: 600 }}>{data[hoveredIndex].open.toFixed(2)}</span></div>
+                                <div><span style={{ color: '#5a6577' }}>Cierre: </span><span style={{ color: '#e1e5eb', fontWeight: 600 }}>{data[hoveredIndex].close.toFixed(2)}</span></div>
+                                <div><span style={{ color: '#5a6577' }}>Máximo: </span><span style={{ color: '#00d4aa', fontWeight: 600 }}>{data[hoveredIndex].high.toFixed(2)}</span></div>
+                                <div><span style={{ color: '#5a6577' }}>Mínimo: </span><span style={{ color: '#ff4757', fontWeight: 600 }}>{data[hoveredIndex].low.toFixed(2)}</span></div>
+                            </div>
+                            <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid #2d333b' }}>
+                                <span style={{ color: '#5a6577' }}>Volumen: </span><span style={{ color: '#667eea', fontWeight: 600 }}>{Math.round(data[hoveredIndex].volume || 0).toLocaleString()}</span>
+                            </div>
+                        </div>
+                    )}
                 </div>
             );
         };
 
         // ==================== NEWS TICKER ====================
-        const NewsTicker = ({ news, onNewsSpeak }) => {
+        const NewsTicker = ({ news, onNewsSpeak, playHover }) => {
             return (
                 <div style={{
                     background: 'linear-gradient(90deg, #1a1f2e, #2d3748, #1a1f2e)',
                     borderBottom: '2px solid #667eea',
                     overflow: 'hidden',
-                    height: 50,
+                    height: 55,
                     display: 'flex',
                     alignItems: 'center',
                     position: 'relative'
@@ -380,48 +785,66 @@
                         left: 0,
                         top: 0,
                         bottom: 0,
-                        background: 'linear-gradient(90deg, #667eea, #764ba2)',
-                        padding: '0 20px',
+                        background: 'linear-gradient(135deg, #667eea, #764ba2)',
+                        padding: '0 24px',
                         display: 'flex',
                         alignItems: 'center',
                         fontWeight: 800,
                         fontSize: 12,
                         zIndex: 10,
-                        minWidth: 120
+                        minWidth: 140,
+                        boxShadow: '4px 0 12px rgba(102,126,234,0.4)'
                     }}>
                         🔴 LIVE NEWS
                     </div>
                     <div className="ticker-animation" style={{
                         display: 'flex',
-                        gap: 60,
+                        gap: 80,
                         whiteSpace: 'nowrap',
-                        paddingLeft: 140
+                        paddingLeft: 160
                     }}>
-                        {[...news, ...news].map((item, i) => (
+                        {[...news, ...news, ...news].map((item, i) => (
                             <div key={`${item.id}-${i}`} 
                                 onClick={() => onNewsSpeak(item)}
+                                onMouseEnter={playHover}
                                 style={{
                                     display: 'flex',
                                     alignItems: 'center',
                                     gap: 12,
                                     fontSize: 13,
                                     cursor: 'pointer',
-                                    padding: '8px 16px',
-                                    borderRadius: 8,
-                                    background: item.impact === 'positive' ? 'rgba(0,212,170,0.1)' : 
-                                               item.impact === 'negative' ? 'rgba(255,71,87,0.1)' : 'rgba(255,255,255,0.05)',
-                                    border: `1px solid ${item.impact === 'positive' ? '#00d4aa' : item.impact === 'negative' ? '#ff4757' : '#4a5568'}`,
-                                    transition: 'all 0.3s ease'
+                                    padding: '10px 20px',
+                                    borderRadius: 10,
+                                    background: item.impact === 'positive' ? 'rgba(0,212,170,0.15)' : 
+                                               item.impact === 'negative' ? 'rgba(255,71,87,0.15)' : 'rgba(255,255,255,0.08)',
+                                    border: `2px solid ${item.impact === 'positive' ? '#00d4aa' : item.impact === 'negative' ? '#ff4757' : '#4a5568'}`,
+                                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                    fontWeight: 600
                                 }}
                                 onMouseEnter={e => {
+                                    playHover();
                                     e.currentTarget.style.transform = 'scale(1.05)';
-                                    e.currentTarget.style.background = 'rgba(102,126,234,0.2)';
+                                    e.currentTarget.style.background = 'rgba(102,126,234,0.25)';
+                                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(102,126,234,0.3)';
                                 }}
                                 onMouseLeave={e => {
                                     e.currentTarget.style.transform = 'scale(1)';
+                                    e.currentTarget.style.background = item.impact === 'positive' ? 'rgba(0,212,170,0.15)' : 
+                                                                     item.impact === 'negative' ? 'rgba(255,71,87,0.15)' : 'rgba(255,255,255,0.08)';
+                                    e.currentTarget.style.boxShadow = 'none';
                                 }}
                             >
                                 <span>{item.text}</span>
+                                <span style={{
+                                    padding: '3px 10px',
+                                    borderRadius: 6,
+                                    background: item.impact === 'positive' ? '#00d4aa' : item.impact === 'negative' ? '#ff4757' : '#4a5568',
+                                    color: '#fff',
+                                    fontSize: 10,
+                                    fontWeight: 800
+                                }}>
+                                    {item.recommendation}
+                                </span>
                             </div>
                         ))}
                     </div>
@@ -430,7 +853,7 @@
         };
 
         // ==================== MARKET TABLE ====================
-        const MarketTable = ({ assets, allData, selectedAsset, onSelect, onAnalyze }) => {
+        const MarketTable = ({ assets, allData, selectedAsset, onSelect, onAnalyze, playClick, playHover }) => {
             const [flashStates, setFlashStates] = useState({});
 
             useEffect(() => {
@@ -456,24 +879,27 @@
                     background: '#0d1117',
                     borderRadius: 12,
                     border: '1px solid #21262d',
-                    overflow: 'hidden'
+                    overflow: 'hidden',
+                    boxShadow: '0 4px 24px rgba(0,0,0,0.3)'
                 }}>
                     <div style={{
                         display: 'grid',
-                        gridTemplateColumns: '2fr 1.2fr 1fr 1fr 100px 120px',
-                        padding: '10px 16px',
+                        gridTemplateColumns: '2.5fr 1.2fr 1fr 1fr 120px 130px',
+                        padding: '12px 20px',
                         background: '#161b22',
-                        borderBottom: '1px solid #21262d',
+                        borderBottom: '2px solid #21262d',
                         fontSize: 11,
                         color: '#5a6577',
-                        fontWeight: 600
+                        fontWeight: 800,
+                        textTransform: 'uppercase',
+                        letterSpacing: 0.5
                     }}>
                         <span>Activo</span>
                         <span style={{ textAlign: 'right' }}>Precio</span>
                         <span style={{ textAlign: 'right' }}>Cambio</span>
                         <span style={{ textAlign: 'right' }}>Cambio %</span>
                         <span style={{ textAlign: 'center' }}>Tendencia</span>
-                        <span style={{ textAlign: 'center' }}>Acción</span>
+                        <span style={{ textAlign: 'center' }}>Análisis AI</span>
                     </div>
                     {assets.map(asset => {
                         const data = allData[asset.id];
@@ -488,58 +914,76 @@
                         return (
                             <div key={asset.id}
                                 className={`slide-in ${flash === 'up' ? 'flash-up' : flash === 'down' ? 'flash-down' : ''}`}
-                                onClick={() => onSelect(asset.id)}
+                                onClick={() => { playClick(); onSelect(asset.id); }}
+                                onMouseEnter={playHover}
                                 style={{
                                     display: 'grid',
-                                    gridTemplateColumns: '2fr 1.2fr 1fr 1fr 100px 120px',
-                                    padding: '12px 16px',
+                                    gridTemplateColumns: '2.5fr 1.2fr 1fr 1fr 120px 130px',
+                                    padding: '14px 20px',
                                     borderBottom: '1px solid #161b22',
                                     cursor: 'pointer',
-                                    background: selectedAsset === asset.id ? 'rgba(0,212,170,0.05)' : 'transparent',
-                                    borderLeft: selectedAsset === asset.id ? '3px solid #00d4aa' : '3px solid transparent',
-                                    alignItems: 'center'
+                                    background: selectedAsset === asset.id ? 'rgba(102,126,234,0.08)' : 'transparent',
+                                    borderLeft: selectedAsset === asset.id ? '4px solid #667eea' : '4px solid transparent',
+                                    alignItems: 'center',
+                                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                                }}
+                                onMouseEnter={e => {
+                                    if (selectedAsset !== asset.id) {
+                                        e.currentTarget.style.background = 'rgba(255,255,255,0.03)';
+                                    }
+                                }}
+                                onMouseLeave={e => {
+                                    if (selectedAsset !== asset.id) {
+                                        e.currentTarget.style.background = 'transparent';
+                                    }
                                 }}
                             >
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                    <span style={{ fontSize: 20 }}>{asset.icon}</span>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                    <span style={{ fontSize: 24 }}>{asset.icon}</span>
                                     <div>
-                                        <div style={{ fontWeight: 600, fontSize: 13 }}>{asset.symbol}</div>
+                                        <div style={{ fontWeight: 700, fontSize: 14, color: '#e1e5eb' }}>{asset.symbol}</div>
                                         <div style={{ fontSize: 11, color: '#5a6577' }}>{asset.name}</div>
                                     </div>
                                 </div>
-                                <div style={{ textAlign: 'right', fontWeight: 700, fontFamily: 'monospace' }}>
+                                <div style={{
+                                    textAlign: 'right',
+                                    fontWeight: 800,
+                                    fontSize: 15,
+                                    color: '#e1e5eb',
+                                    fontFamily: 'monospace'
+                                }}>
                                     {current.toFixed(current > 100 ? 2 : 4)}
                                 </div>
-                                <div style={{ textAlign: 'right', fontWeight: 600, color: isUp ? '#00d4aa' : '#ff4757' }}>
+                                <div style={{
+                                    textAlign: 'right',
+                                    fontWeight: 700,
+                                    color: isUp ? '#00d4aa' : '#ff4757',
+                                    fontFamily: 'monospace'
+                                }}>
                                     {isUp ? '+' : ''}{change.toFixed(2)}
                                 </div>
-                                <div style={{ textAlign: 'right', fontWeight: 600, color: isUp ? '#00d4aa' : '#ff4757' }}>
+                                <div style={{
+                                    textAlign: 'right',
+                                    fontWeight: 700,
+                                    color: isUp ? '#00d4aa' : '#ff4757',
+                                    fontFamily: 'monospace'
+                                }}>
                                     {isUp ? '+' : ''}{changePercent.toFixed(2)}%
                                 </div>
-                                <div style={{ display: 'flex', justifyContent: 'center' }}>
-                                    <MiniChart data={data.slice(-20)} color={isUp ? '#00d4aa' : '#ff4757'} width={90} height={32} />
+                                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                                    <MiniChart data={data.slice(-25)} color={isUp ? '#00d4aa' : '#ff4757'} width={110} height={36} />
                                 </div>
                                 <div style={{ display: 'flex', justifyContent: 'center' }}>
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            onAnalyze(asset, isUp, changePercent);
+                                            playClick();
+                                            onAnalyze(asset, isUp, changePercent, current);
                                         }}
-                                        style={{
-                                            padding: '6px 12px',
-                                            borderRadius: 6,
-                                            border: 'none',
-                                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                            color: 'white',
-                                            fontSize: 11,
-                                            fontWeight: 600,
-                                            cursor: 'pointer',
-                                            transition: 'all 0.2s'
-                                        }}
-                                        onMouseEnter={e => e.target.style.transform = 'scale(1.05)'}
-                                        onMouseLeave={e => e.target.style.transform = 'scale(1)'}
+                                        className="analyze-btn"
+                                        onMouseEnter={playHover}
                                     >
-                                        🎤 Analizar
+                                        🎤 Analizar AI
                                     </button>
                                 </div>
                             </div>
@@ -554,21 +998,20 @@
             const [allData, setAllData] = useState({});
             const [selectedAsset, setSelectedAsset] = useState('sp500');
             const [activeTab, setActiveTab] = useState('todos');
-            const [chartSize, setChartSize] = useState({ width: 800, height: 400 });
+            const [chartSize, setChartSize] = useState({ width: 900, height: 450 });
             const { isEnabled, toggleVoice, speak, lastAnnouncement } = useVoiceAssistant();
+            const { playClick, playHover, playSuccess, playAlert } = useASMRSounds();
             const containerRef = useRef(null);
             const lastNewsIndex = useRef(-1);
 
-            // Initialize data
             useEffect(() => {
                 const initialData = {};
                 Object.values(ASSETS).flat().forEach(asset => {
-                    initialData[asset.id] = generateInitialHistory(asset.basePrice, asset.volatility, 60);
+                    initialData[asset.id] = generateInitialHistory(asset.basePrice, asset.volatility, 100);
                 });
                 setAllData(initialData);
             }, []);
 
-            // Real-time updates
             useEffect(() => {
                 const interval = setInterval(() => {
                     setAllData(prev => {
@@ -578,13 +1021,14 @@
                                 const lastData = newData[asset.id][newData[asset.id].length - 1];
                                 const change = (Math.random() - 0.48) * asset.volatility;
                                 const newValue = lastData.value + change;
-                                newData[asset.id] = [...newData[asset.id].slice(-120), {
+                                newData[asset.id] = [...newData[asset.id].slice(-150), {
                                     value: newValue,
                                     time: Date.now(),
                                     open: lastData.value,
                                     close: newValue,
-                                    high: Math.max(lastData.value, newValue) + Math.random() * asset.volatility * 0.2,
-                                    low: Math.min(lastData.value, newValue) - Math.random() * asset.volatility * 0.2
+                                    high: Math.max(lastData.value, newValue) + Math.random() * asset.volatility * 0.3,
+                                    low: Math.min(lastData.value, newValue) - Math.random() * asset.volatility * 0.3,
+                                    volume: Math.random() * 1000 + 500
                                 }];
                             }
                         });
@@ -595,7 +1039,6 @@
                 return () => clearInterval(interval);
             }, []);
 
-            // Anunciar noticias automáticamente
             useEffect(() => {
                 if (!isEnabled) return;
 
@@ -603,26 +1046,22 @@
                     const currentIndex = Math.floor(Math.random() * NEWS_DATA.length);
                     if (currentIndex !== lastNewsIndex.current) {
                         const news = NEWS_DATA[currentIndex];
-                        const actionText = news.impact === 'positive' ? 'Es un buen momento para comprar' :
-                                         news.impact === 'negative' ? 'Te recomiendo esperar o vender' :
-                                         'Mantén tu posición y observa';
-                        
-                        speak(`${news.text}. ${actionText}`, 'normal');
+                        speak(`Noticia importante. ${news.text}. ${news.analysis}`, 'normal');
+                        playAlert();
                         lastNewsIndex.current = currentIndex;
                     }
-                }, 45000); // Cada 45 segundos
+                }, 60000);
 
                 return () => clearInterval(interval);
-            }, [isEnabled, speak]);
+            }, [isEnabled, speak, playAlert]);
 
-            // Resize handler
             useEffect(() => {
                 const handleResize = () => {
                     if (containerRef.current) {
                         const width = containerRef.current.offsetWidth;
                         setChartSize({
                             width: Math.min(width - 32, 1200),
-                            height: window.innerWidth < 768 ? 300 : 420
+                            height: window.innerWidth < 768 ? 350 : 480
                         });
                     }
                 };
@@ -631,25 +1070,46 @@
                 return () => window.removeEventListener('resize', handleResize);
             }, []);
 
-            const handleAnalyze = (asset, isUp, changePercent) => {
-                const recommendations = {
-                    buy: `Analizando ${asset.name}. La tendencia es alcista con ${changePercent.toFixed(2)}% positivo. Mi recomendación: Compra ahora, el momentum está a tu favor. Objetivo de precio: ${(asset.basePrice * 1.05).toFixed(2)}.`,
-                    sell: `Analizando ${asset.name}. La tendencia es bajista con ${Math.abs(changePercent).toFixed(2)}% negativo. Mi recomendación: Espera una mejor entrada o considera vender si tienes posición. Soporte en: ${(asset.basePrice * 0.95).toFixed(2)}.`,
-                    hold: `Analizando ${asset.name}. El mercado está lateral. Mi recomendación: Mantén tu posición actual. Espera confirmación de ruptura antes de operar.`
-                };
+            const handleAnalyze = (asset, isUp, changePercent, currentPrice) => {
+                const trend = isUp ? 'alcista' : 'bajista';
+                const strength = Math.abs(changePercent) > 2 ? 'fuerte' : Math.abs(changePercent) > 0.5 ? 'moderada' : 'débil';
+                
+                let analysis = '';
+                let recommendation = '';
+                let target = '';
+                let stopLoss = '';
+                let why = '';
 
-                let rec = recommendations.hold;
-                if (changePercent > 1) rec = recommendations.buy;
-                else if (changePercent < -1) rec = recommendations.sell;
+                if (isUp && changePercent > 1) {
+                    analysis = `Analizando ${asset.name} en detalle. Tendencia ${trend} ${strength} con ${changePercent.toFixed(2)}% positivo.`;
+                    recommendation = 'Mi recomendación: COMPRA. El momentum está claramente a tu favor.';
+                    target = `Objetivo de precio: ${(currentPrice * 1.05).toFixed(2)}.`;
+                    stopLoss = `Stop loss recomendado: ${(currentPrice * 0.97).toFixed(2)}.`;
+                    why = `¿Por qué comprar? Primero, la tendencia es claramente alcista con volumen creciente. Segundo, el precio rompió resistencia clave. Tercero, el momentum se acelera. Cuarto, indicadores técnicos confirman la fortaleza.`;
+                } else if (!isUp && changePercent < -1) {
+                    analysis = `Analizando ${asset.name} en detalle. Tendencia ${trend} ${strength} con ${Math.abs(changePercent).toFixed(2)}% negativo.`;
+                    recommendation = 'Mi recomendación: ESPERA o VENDE si tienes posición. No es buen momento para entrar.';
+                    target = `Soporte clave: ${(currentPrice * 0.95).toFixed(2)}.`;
+                    stopLoss = `Resistencia: ${(currentPrice * 1.03).toFixed(2)}.`;
+                    why = `¿Por qué esperar o vender? Primero, la tendencia bajista está confirmada. Segundo, el volumen de venta aumenta. Tercero, rompió soporte importante. Cuarto, no hay señales de reversión aún. Espera estabilización.`;
+                } else {
+                    analysis = `Analizando ${asset.name}. El mercado está lateral con movimiento del ${Math.abs(changePercent).toFixed(2)}%.`;
+                    recommendation = 'Mi recomendación: MANTÉN tu posición actual o ESPERA confirmación.';
+                    target = `Resistencia: ${(currentPrice * 1.02).toFixed(2)}. Soporte: ${(currentPrice * 0.98).toFixed(2)}.`;
+                    stopLoss = '';
+                    why = `¿Por qué esperar? El mercado está en consolidación sin dirección clara. Espera ruptura confirmada con volumen antes de operar. Paciencia es clave.`;
+                }
 
-                speak(rec, 'high');
+                const fullAnalysis = `${analysis} ${recommendation} ${target} ${stopLoss} ${why}`;
+                speak(fullAnalysis, 'high', 0.85);
+                playSuccess();
             };
 
             const handleNewsClick = (news) => {
-                const actionText = news.impact === 'positive' ? 'Aprovecha esta oportunidad de compra' :
-                                 news.impact === 'negative' ? 'Ten cuidado, es mejor esperar' :
-                                 'Observa el comportamiento antes de actuar';
-                speak(`${news.text}. ${actionText}`, 'high');
+                playClick();
+                const text = `${news.text}. Análisis detallado: ${news.analysis}. Recomendación: ${news.recommendation}. Razón principal: ${news.reason}.`;
+                speak(text, 'high', 0.85);
+                playSuccess();
             };
 
             const selectedAssetData = allData[selectedAsset];
@@ -663,72 +1123,75 @@
                 { id: 'crypto', label: '₿ Crypto', assets: ASSETS.crypto },
                 { id: 'bolsa', label: '📊 Bolsa', assets: ASSETS.bolsa },
                 { id: 'acciones', label: '🏢 Acciones', assets: ASSETS.acciones },
+                { id: 'commodities', label: '🌾 Commodities', assets: ASSETS.commodities },
+                { id: 'bienesraices', label: '🏠 Bienes Raíces', assets: ASSETS.bienesRaices },
             ];
 
-            const currentTab = tabs.find(t => t.id === activeTab);
+            const currentTab = tabs.find(t => t.id === activeTab) || tabs[0];
 
             return (
-                <div style={{ minHeight: '100vh', background: '#0a0e17' }}>
-                    {/* Header */}
+                <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #0a0e17 0%, #1a1f2e 100%)' }}>
                     <header style={{
                         background: 'linear-gradient(180deg, #0d1117, #0a0e17)',
-                        borderBottom: '1px solid #21262d',
-                        padding: '12px 24px',
+                        borderBottom: '2px solid #21262d',
+                        padding: '16px 24px',
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',
                         flexWrap: 'wrap',
-                        gap: 12
+                        gap: 16,
+                        boxShadow: '0 4px 24px rgba(0,0,0,0.3)'
                     }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                             <div style={{
-                                width: 36, height: 36, borderRadius: 10,
+                                width: 42, height: 42, borderRadius: 12,
                                 background: 'linear-gradient(135deg, #667eea, #764ba2)',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                fontSize: 18, fontWeight: 900
+                                fontSize: 22, fontWeight: 900,
+                                boxShadow: '0 4px 12px rgba(102,126,234,0.4)'
                             }}>T</div>
                             <div>
-                                <h1 style={{ fontSize: 18, fontWeight: 800 }}>
+                                <h1 style={{ fontSize: 20, fontWeight: 800, letterSpacing: -0.5 }}>
                                     TradeView <span style={{ color: '#667eea' }}>Pro AI</span>
                                 </h1>
-                                <div style={{ fontSize: 11, color: '#5a6577' }}>
-                                    Asistente de Voz Inteligente
+                                <div style={{ fontSize: 11, color: '#5a6577', fontWeight: 600 }}>
+                                    Dashboard Profesional con Voz y ASMR
                                 </div>
                             </div>
                         </div>
 
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                             {lastAnnouncement && (
                                 <div style={{
-                                    padding: '8px 16px',
-                                    background: 'rgba(102,126,234,0.1)',
+                                    padding: '10px 18px',
+                                    background: 'rgba(102,126,234,0.15)',
                                     border: '1px solid #667eea',
-                                    borderRadius: 8,
+                                    borderRadius: 10,
                                     fontSize: 12,
-                                    maxWidth: 400,
+                                    maxWidth: 450,
                                     overflow: 'hidden',
-                                    textOverflow: 'ellipsis'
+                                    textOverflow: 'ellipsis',
+                                    fontWeight: 500
                                 }}>
                                     🔊 {lastAnnouncement}
                                 </div>
                             )}
                             <button 
-                                onClick={toggleVoice}
+                                onClick={() => { playClick(); toggleVoice(); }}
                                 className={`voice-btn ${isEnabled ? 'active' : ''}`}
+                                onMouseEnter={playHover}
                             >
-                                <span style={{ fontSize: 18 }}>{isEnabled ? '🔊' : '🔇'}</span>
-                                <span>{isEnabled ? 'Voz Activada' : 'Activar Voz'}</span>
+                                <span style={{ fontSize: 20 }}>{isEnabled ? '🔊' : '🔇'}</span>
+                                <span>{isEnabled ? 'Voz Activada' : 'Activar Voz AI'}</span>
                             </button>
                         </div>
                     </header>
 
-                    {/* News Ticker */}
-                    <NewsTicker news={NEWS_DATA} onNewsSpeak={handleNewsClick} />
+                    <NewsTicker news={NEWS_DATA} onNewsSpeak={handleNewsClick} playHover={playHover} />
 
-                    <div ref={containerRef} style={{ maxWidth: 1400, margin: '0 auto', padding: '16px 16px 40px' }}>
-                        {/* Main Chart */}
+                    <div ref={containerRef} style={{ maxWidth: 1400, margin: '0 auto', padding: '20px 20px 50px' }}>
                         {selectedAssetData && selectedAssetInfo && (
-                            <div className="slide-in" style={{ marginBottom: 20 }}>
+                            <div className="slide-in" style={{ marginBottom: 24 }}>
                                 <LargeChart
                                     data={selectedAssetData}
                                     symbol={selectedAssetInfo.symbol}
@@ -739,47 +1202,50 @@
                             </div>
                         )}
 
-                        {/* Tabs */}
-                        <div style={{ display: 'flex', gap: 6, marginBottom: 16, overflowX: 'auto' }}>
+                        <div style={{ 
+                            display: 'flex', 
+                            gap: 10, 
+                            marginBottom: 24, 
+                            overflowX: 'auto',
+                            paddingBottom: 8,
+                            scrollbarWidth: 'thin',
+                            scrollbarColor: '#667eea #161b22'
+                        }}>
                             {tabs.map(tab => (
-                                <button key={tab.id}
-                                    onClick={() => setActiveTab(tab.id)}
-                                    style={{
-                                        padding: '8px 16px',
-                                        borderRadius: 8,
-                                        border: activeTab === tab.id ? '1px solid #667eea' : '1px solid #21262d',
-                                        background: activeTab === tab.id ? 'rgba(102,126,234,0.1)' : '#161b22',
-                                        color: activeTab === tab.id ? '#667eea' : '#8b949e',
-                                        cursor: 'pointer',
-                                        fontSize: 12,
-                                        fontWeight: 600,
-                                        whiteSpace: 'nowrap'
-                                    }}
+                                <button 
+                                    key={tab.id} 
+                                    className={`tab-btn ${activeTab === tab.id ? 'active' : ''}`}
+                                    onClick={() => { playClick(); setActiveTab(tab.id); }}
+                                    onMouseEnter={playHover}
                                 >
-                                    {tab.label}
+                                    <span>{tab.label}</span>
                                 </button>
                             ))}
                         </div>
 
-                        {/* Market Table */}
                         <MarketTable
                             assets={currentTab.assets}
                             allData={allData}
                             selectedAsset={selectedAsset}
                             onSelect={setSelectedAsset}
                             onAnalyze={handleAnalyze}
+                            playClick={playClick}
+                            playHover={playHover}
                         />
 
-                        {/* Footer */}
                         <div style={{
                             textAlign: 'center',
-                            padding: '30px 0 10px',
-                            borderTop: '1px solid #21262d',
-                            marginTop: 30,
-                            color: '#5a6577',
-                            fontSize: 12
+                            padding: '40px 20px 20px',
+                            borderTop: '2px solid #21262d',
+                            marginTop: 40,
+                            background: 'linear-gradient(180deg, transparent, rgba(102,126,234,0.05))'
                         }}>
-                            🎤 TradeView Pro AI con Asistente de Voz • Datos en tiempo real
+                            <div style={{ color: '#5a6577', fontSize: 13, marginBottom: 8 }}>
+                                🎤 TradeView Pro AI • Análisis de Voz Inteligente • Sonidos ASMR
+                            </div>
+                            <div style={{ color: '#30363d', fontSize: 11 }}>
+                                Datos en tiempo real • Gráficas profesionales • Recomendaciones detalladas
+                            </div>
                         </div>
                     </div>
                 </div>
