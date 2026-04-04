@@ -312,6 +312,7 @@ const useMarketData = () => {
   const fetch_ = async () => {
     const st = { crypto:'loading', forex:'loading', metals:'loading', yahoo:'loading' };
     const out = {};
+    try {
 
     /* 1. CRYPTO — CoinGecko (free, no key, CORS ok) */
     try {
@@ -362,7 +363,7 @@ const useMarketData = () => {
     try {
       const syms = Object.keys(YAHOO_MAP).join(',');
       const url  = `https://corsproxy.io/?${encodeURIComponent('https://query1.finance.yahoo.com/v7/finance/quote?symbols=' + syms)}`;
-      const r    = await fetch(url, { signal: AbortSignal.timeout(14000) });
+      const r    = await fetch(url, { signal: AbortSignal.timeout(8000) });
       const d    = await r.json();
       const results = d?.quoteResponse?.result || [];
 
@@ -411,10 +412,14 @@ const useMarketData = () => {
       } catch(_) {}
     }
 
-    setApiStatus(st);
-    if (Object.keys(out).length > 0) {
-      setData(prev => ({ ...prev, ...out }));
-      setLastUpdate(new Date());
+    } catch(e) { console.warn('fetch_ outer:', e); }
+    finally {
+      setApiStatus(st);
+      if (Object.keys(out).length > 0) {
+        setData(prev => ({ ...prev, ...out }));
+        setLastUpdate(new Date());
+      }
+      // ALWAYS stop the loading spinner, even if every API failed
       setLoading(false);
     }
   };
